@@ -1,0 +1,760 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>C++, The Good, The Bad and The Ugly</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/atom-one-light.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+				    <h1>C++, the good, the bad and the ugly</h1>
+				</section>
+				<section>
+				    <h2>The Good Parts</h2>
+				    <p>An evolution from (pre) C++98 to C++17</p>
+				</section>
+				<section>
+					<h2>A classic C++ example in many text books</h2>
+					<pre><code class="cpp" data-trim>
+					double pi = 3.1415926;
+
+					double get_area() {
+					    double area, radius = 1.5;
+					    area = pi * radius * radius;
+					    return area;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<section>
+						<h2>Always <code>const</code></h2>
+						<ul>
+							<li><code>const</code> expresses your intention well</code>
+							<li><code>const</code> hints the compiler to do some optimizations</code>
+							<li><code>const</code> forces value to be initialized</code>
+						</ul>
+
+						<pre><code class="cpp" data-trim>
+						double const pi = 3.1415926;
+
+						double get_area() {
+						    double const radius = 1.5;
+						    double const area = pi * radius * radius;
+						    return area;
+						}
+						</code></pre>
+						<a href="https://godbolt.org/z/99T8Up">code</a>
+
+						<p class="fragment">What does <code>const</code> really mean?</p>
+						<p class="fragment">What's your "intention"?</p>
+					    </textarea>
+					</section>
+					<section>
+						<p>Does compiler consider this parameter as a <code>const</code>?<p>
+						<pre><code class="cpp" data-trim>
+						struct S;
+
+						extern void foo(S const&amp; s);
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<h2>DRY (Don't Repeat Yourself)</h2>
+					<ul>
+						<li>Use predefined values</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
+
+					double get_area() {
+					    using boost::math::double_constants::pi;
+					    double const radius = 1.5;
+					    double const area = pi * radius * radius;
+					    return area;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>compile time evaluation</h2>
+					<ul>
+						<li>Move the effort to compile time (sometimes)</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
+
+					constexpr double get_area() {
+					    using boost::math::double_constants::pi;
+					    constexpr double const radius = 1.5;
+					    constexpr double const area = pi * radius * radius;
+					    return area;
+					}
+					</code></pre>
+					<a href="https://godbolt.org/z/D5SCod">constexpr fib</a>/<a href="https://godbolt.org/z/9BQ8UT">constexpr new</a>
+				</section>
+				<section>
+					<h2>Tidy up</h2>
+					<pre><code class="cpp" data-trim>
+					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
+
+					constexpr double get_area(double radius) {
+					    return boost::math::double_constants::pi * radius * radius;
+					}
+					</code></pre>
+					<p class="fragment">What if we have different types?</p>
+				</section>
+				<section>
+					<h2>The Ultimate DRY - <code>template</code></h2>
+					<ul>
+						<li>Compiler <strong>always</strong> does all the heavy lifting at compile time</li>
+						<li>Type safe</li>
+						<li>Generates code as efficient as hand writting one</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
+
+					template &lt;typename T&gt;
+					constexpr T get_area(T radius) {
+					    return boost::math::double_constants::pi * radius * radius;
+					}
+					</code></pre>
+					<p class="fragment">There is one bug might crush your program</p>
+				</section>
+				<section>
+					<h2>What's wrong with <code>factory()</code></h2>
+					<ul>
+						<li class="fragment">Is it a pointer to a static?</li>
+						<li class="fragment">Is it a pointer dynamically allocated?</li>
+						<li class="fragment">Should I release it? If so, how?</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					struct S;
+
+					extern S* factory();
+					</code></pre>
+				</section>
+				<section>
+					<h2>Easy to Use, Hard to Misuse</h2>
+					<ul>
+						<li>Return ref when it is a static</li>
+						<li>Return a smart pointer when it is dyn allocated</li>
+						<li>Never use raw pointers, which likely to be a design flaw</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					struct S;
+					std::shared_ptr&lt;S&gt; factory() {
+					    return std::shared_ptr&lt;S&gt;{};
+					};
+					</code></pre>
+					<p class="fragment">What is the performance implication of accessing a static?</p>
+				</section>
+				<section>
+					<h2>Always prefer <code>std::make_shared</code> over <code>std::shared_ptr</code></h2>
+					
+					<pre><code class="cpp" data-trim>
+					struct S;
+					auto factory() {
+					    return std::make_shared&lt;S&gt;{};
+					};
+					</code></pre>
+					<p class="fragment">Is <code>std::shared_ptr</code> thread safe, why?</p>
+				</section>
+				<section>
+					<h2>Almost always prefer <code>std::unique_ptr</code> over <code>std::shared_ptr</code></h2>
+					<ul>
+						<li><code>std::unique_ptr</code> is as efficient as a raw pointer</li>
+						<li>Unless you need share owership</li>
+					</ul>
+					<pre><code class="cpp" data-trim>
+					struct S;
+					auto factory() {
+					    return std::make_unique&lt;S&gt;{};
+					};
+					</code></pre>
+					<p class="fragment">Fun fact: <code>std::make_unique</code> was missing in C++11, added in C++14</p>
+				</section>
+				<section>
+					<h2>RAII (Resource Requisition Is Initialization)</h2>
+					<ul>
+						<li>No memory leak</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					struct S {
+					    S() : data(new int) {}
+					    ~S() { delete data; }
+					    int* data{};
+					};
+					</code></pre>
+					<p class="fragment">There is a bug</p>
+				</section>
+				<section>
+					<h2>Passing By Value is gooood</h2>
+					<ul>
+						<li>Copy elision</li>
+						<li>RVO (Return Value Optimization)</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					extern S foo();
+					extern bar(S);
+
+					bar(foo());
+					S s = foo();
+					</code></pre>
+
+					<p class="fragment">It is a bug with ALL compilers</p>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
+					std::vector&lt;int&gt; data;
+					data.push_back(1);
+					data.push_back(2);
+					data.push_back(3);
+					</code></pre>
+				</section>
+				<section>
+					<h2>List Initializer</h2>
+
+					<pre><code class="cpp" data-trim>
+					std::vector&lt;int&gt; data = {1, 2, 3, 4};
+					</code></pre>
+
+					<p class="fragment">Is list initializer the biggest failure in C++? - some guy on twitter</p>
+			       </section>
+				<section>
+					<h2>CTAD (Class Template Argument Deduction)</h2>
+
+					<pre><code class="cpp" data-trim>
+					std::vector data = {1, 2, 3, 4};
+					</code></pre>
+
+					<p class="fragment">What if the length of vector is predetermined?</p>
+				</section>
+				<section>
+					<h2>Raw array?</h2>
+
+					<pre><code class="cpp" data-trim>
+					int data[] = {1, 2, 3, 4};
+					</code></pre>
+
+					<p class="fragment">We can do better</p>
+				</section>
+				<section>
+					<h2><code>std::array</code></h2>
+
+					<ul>
+						<li><code>std::array</code> provides more functionality than raw array</li>
+						<li>No runtime overhead</li>
+						<li>Using raw array in modern code should be considered as a design flaw</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					std::array data = {1, 2, 3, 4};
+					</code></pre>
+				</section>
+				<section>
+					<h2>What's wrong with this API?</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;map&gt;
+
+					int foo(std::map&lt;int, int&gt; const&amp; m) {
+					    for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
+					        if (it-&gt;first &gt; 3 + it-&gt;second)
+					            return it-&gt;second;
+					    return -1;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Be familiar with STL</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;map&gt;
+
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
+					    for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
+					        if (it-&gt;first &gt; 3 + it-&gt;second)
+					            return it-&gt;second;
+					    return {};
+					}
+					</code></pre>
+
+					<p class="fragment"><code>boost::outcome</code> is even better</p>
+				</section>
+				<section>
+					<h2>Almost always <code>auto</code> - Herb Sutter</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;map&gt;
+
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
+					    for (auto it=m.begin(); it!=m.end(); ++it)
+					        if (it-&gt;first &gt; 3 + it-&gt;second)
+					            return it-&gt;second;
+					    return {};
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Range-based for loop</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;map&gt;
+
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
+					    for (auto&amp; p : m)
+					        if (p.first &gt; 3 + p.second)
+					            return p.second;
+					    return {};
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Structured binding</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;map&gt;
+
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
+					    for (auto&amp; [key, value] : m)
+					        if (key &gt; 3 + value)
+					            return value;
+					    return {};
+					}
+					</code></pre>
+
+					<p class="fragment">What is the performance implication of structured binding?</p>
+				</section>
+				<section>
+					<h2>No Raw <code>for</code> loop - Sean Parent</h2>
+
+					<ul>
+						<li>Know your algorithms</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;map&gt;
+					#include &lt;algorithm&gt;
+
+					struct F {
+					    bool operator()(std::pair&lt;int, int&gt; p) {
+							return p.first &gt; 3 + p.second;
+					    }
+					};
+
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
+					    if (auto it=std::find_if(cbegin(m), cend(m), F()); it!=m.end())
+					        return it-&gt;second;
+					    return {};
+					}
+					</code></pre>
+
+					<p class="fragment">We can do better with <code>F</code></p>
+				</section>
+				<section>
+					<ul>
+						<li><code>final</code></li>
+						<li><code>[[nodiscard]]</code></li>
+						<li><code>noexcept</code></li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					struct F final {
+					    [[nodiscard]] constexpr bool operator()(std::pair&lt;int, int&gt; p) const noexcept {
+					        return p.first &gt; 3 + p.second;
+					    }
+					};
+					</code></pre>
+
+					<p class="fragment">What does a <code>const</code> member function imply?</p>
+				</section>
+				<section>
+					<ul>
+						<li>override</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					struct B {
+					    virtual void foo();
+					};
+					struct D : B {
+					    void foo() override;
+					}
+					</code></pre>
+
+					<p class="fragment">Inheritance is the base class of all evil -- Sean Parent</p>
+				</section>
+				<section>
+				I hope we have functions use <code>constexpr</code>, <code>const</code>, <code>noexcept</code> as default attributes
+				</section>
+				<section>
+					<h2><code>lambda</code></h2>
+
+					<ul>
+						<li>By default, it is <code>const</code> and <code>noexcept</code></li>
+						<li>Can be <code>constexpr</code> if it is needed</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+						auto f = []() {};
+					</code></pre>
+
+					<pre class="fragment"><code class="cpp" data-trim>
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
+					    if (auto it=std::find_if(cbegin(m), cend(m),
+					        [](std::pair&lt;int, int&gt; const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
+						    return it-&gt;second;
+					  return {};
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Generic <code>lambda</code></h2>
+
+					<pre><code class="cpp" data-trim>
+					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
+					    if (auto it=std::find_if(cbegin(m), cend(m),
+					        [](auto const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
+						    return it-&gt;second;
+					    return {};
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>What's wrong with raw string literal</h2>
+
+					<ul>
+						<li>Either do not have size info</li>
+						<li>Like a raw array (it is), decays to pointer easily</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					char const* s1 = "hello";   // s1: char const*
+					char const s2[] = "hello";  // s2: char const[6]
+					</code></pre>
+				</section>
+				<section>
+					<h2>How about <code>std::string</code></h2>
+					<ul>
+						<li class="fragment">It allocates (somethings)</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					std::string s1 = "hello";
+					std::string s2 = "hello hello hello";
+					std::string s3 = "very looooooooooooooooog string";
+					</code></pre>
+				</section>
+				<section>
+					<h2><code>std::string_view</code> comes to rescure</h2>
+					<ul>
+						<li>Almost identical API compare to <code>std::string</code></li>
+						<li>No overhead compare to raw string literals</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					std::string_view s = "hello";
+					</code></pre>
+
+					<p class="fragment"><code>std::string_view</code> is merely a view!</p>
+				</section>
+				<section>
+					<h2>How to write a <code>print</code></h2>
+					<pre><code class="cpp" data-trim>
+					struct S{};
+					std::ostream&amp; operator&lt;&lt;(std::ostream&amp;, S const&amp; s);
+
+					print(3, "hi", 7.8);
+					print(3, "hi", 7.8, std::string("aloha"));
+					print(3, "hi", 7.8, std::string("aloha"), S{});
+					</code></pre>
+				</section>
+				<section>
+					<h2>Solution 1</h2>
+
+					<pre><code class="cpp" data-trim>
+					template &lt;typename T1, typename T2, typename T3&gt;
+					void print(T1 const&amp; t1, T2 const&amp; t2, T3 const&amp; t3) {
+					    std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3;
+					}
+					template &lt;typename T1, typename T2, typename T3, typename T4&gt;
+					void print(T1 const&amp; t1, T2 const&amp; t2, T3 const&amp; t3, T4 const&amp; t4) {
+					    std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3 &lt;&lt; ' ' &lt;&lt; t4;
+					}
+					template &lt;typename T1, typename T2, typename T3, typename T4, typename T5&gt;
+					void print(T1 const&amp; t1, T2 const&amp; t2, T3 const&amp; t3, T4 const&amp; t4, T5 const&amp; t5) {
+					    std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3 &lt;&lt; ' ' &lt;&lt; t4 &lt;&lt; ' ' &lt;&lt; t5;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Solution 2 - Variadic Template</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;iostream&gt;
+					#include &lt;initializer_list&gt;
+
+					template &lt;typename ... Ts&gt;
+					void print(Ts const&amp; ... ts) {
+					    (void)std::initializer_list&lt;int&gt;{(std::cout &lt;&lt; ts &lt;&lt; ' ', 0)...};
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Solution 3 - Folding expression</h2>
+
+					<pre><code class="cpp" data-trim>
+					template &lt;typename ... Ts&gt;
+					void print(Ts const&amp; ... ts) {
+					    (..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
+					}
+					</code></pre>
+
+					<p class="fragment">What about the extra space</p>
+				</section>
+				<section>
+					<h2>Solution 4</h2>
+
+					<pre><code class="cpp" data-trim>
+					template &lt;typename T, typename ... Ts&gt;
+					void print(T const&amp; t, Ts const&amp; ... ts) {
+					    std::cout &lt;&lt; t;
+					    (..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
+					}
+					</code></pre>
+
+					<p class="fragment">What about <code>print()</code><p>
+				</section>
+				<section>
+					<h2>Solution 5</h2>
+
+					<pre><code class="cpp" data-trim>
+					void print() {}
+
+					template &lt;typename T, typename ... Ts&gt;
+					void print(T const&amp; t, Ts const&amp; ... ts) {
+					    std::cout &lt;&lt; t;
+					    (..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>Compile time <code>if</code></h2>
+
+					<ul>
+						<li>The branch that does not used will never be compiled</li>
+					</ul>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;iostream&gt;
+
+					template &lt;typename ... Ts&gt;
+					void switch_func(Ts &amp;&amp; ... ts) {
+					    if constexpr (sizeof...(ts) &gt; 3) {
+					        std::cout &lt;&lt; "&gt;3";
+					    } else {
+					        std::cout &lt;&lt; "&lt;=3";
+					    }
+					}
+
+					int main() {
+					    switch_func(3, 5.7);
+					}
+					</code></pre>
+
+					<a href="https://godbolt.org/z/59__CY">code</a>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
+					std::string path = "C:\\User\\xmo";
+					auto path{R"(C:\User\xmo)"};
+					</code></pre>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
+					struct S {
+						S() = default;
+						~S() = default;
+						S(S const&amp;) = default;
+						S(S&amp;&amp;) = default;
+						S&amp; operator(S const&amp;) = delete;
+						S&amp; (S&amp;&amp;) = delete;
+					};
+					</code></pre>
+				</section>
+				<section>
+					<h2>Compilers are getting better at optimization</h2>
+					<p class="fragment">Is this code slow because of jumps</p>
+
+					<pre><code class="cpp" data-trim>
+					extern void bar();
+
+					void foo() {
+					    for (int i=0; i&lt;7; ++i)
+					        bar();
+					}
+					</code></pre>
+					<a href="https://godbolt.org/z/45gGNa">code</a>
+				</section>
+				<section>
+					<p>Is this code slow because of it jumps a million times?</p>
+					<pre><code class="cpp" data-trim>
+					#include &lt;cstddef&gt;
+					#include &lt;iterator&gt;
+
+					extern int a[1'000'000];
+
+					void foo() {
+					    for (std::size_t i=0; i&lt;std::size(a); ++i)
+						a[i] = 0;
+					}
+					</code></pre>
+					<a href="https://godbolt.org/z/_ruzU_">code</a>
+				</section>
+				<section>
+					<p>Is this code slow because the compiler doesn't know its size?</p>
+					<pre><code class="cpp" data-trim>
+					#include &lt;cstddef&gt;
+
+					void foo(int* a, std::size_t size) {
+					    for (std::size_t i=0; i&lt;size; ++i)
+						a[i] = 0;
+					}
+					</code></pre>
+					<a href="https://godbolt.org/z/gvUvgy">code</a>
+				</section>
+				<section>
+					<p>Is standard algorithm efficient enough?</p>
+					<pre><code class="cpp" data-trim>
+					#include &lt;cstddef&gt;
+					#include &lt;algorithm&gt;
+
+					void foo(int* a, std::size_t size) {
+					    std::generate(a, a+size, []{return 0;});
+					}
+					</code></pre>
+					<a href="https://godbolt.org/z/M5AGnt">code</a>
+				</section>
+				<section>
+					<p>Bjarne Stroustrup says,</p>
+					<blockquote>
+					Within C++, there is a much smaller and clearer language struggling to get out.
+					</blockquote>
+					<blockquote class="fragment">
+					And no, that smaller and cleaner language is not Java or C#.
+					</blockquote>
+				</section>
+				<section>
+					<h2>The Ugly</h2>
+					<ul>
+						<li class="fragment">The compiler might be trying too hard</li>
+						<li class="fragment">Undefined Behavior</li>
+					</ul>
+					<blockquote>
+					<p>If you think it's simple, then you have misunderstood the problem.</p>
+					<p>-- Bjarne Stroustrup</p>
+					</blockquote>
+				</section>
+				<section>
+					<p>What is the purpose of this function</p>
+					<pre><code class="cpp" data-trim>
+					bool foo(int n) {
+					    return (n+1) &gt; n;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<h2>The price of writing efficient code</h2>
+
+					<blockquote>
+					<p class="fragment">This is unteachable...</p>
+					<p class="fragment">There are very few people in the world can write it with confidence, I'm not one of them.</p>
+					<p class="fragment">-- Bjarne Stroustrup</p>
+					</blockquote>
+
+					<pre><code class="cpp" data-trim>
+					class employee {
+					    std::string name_;
+					public:
+					    template &lt;typename String, typename = std::enable_if_t&lt;
+					            !std::is_same_v&lt;std::decay_t&lt;String&gt;, std::string&gt;
+					    &gt;&gt;
+					    void set_name(String&amp;&amp; name) noexcept(std::is_nothrow_assignable_v&lt;std::string, String&gt;)
+					    { name_ = std::forward&lt;String&gt;(name); }
+					};
+					</code></pre>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
+					class employee {
+					    std::string name_;
+					public:
+					    template &lt;typename String, typename = std::enable_if_t&lt;
+					            !std::is_same_v&lt;std::decay_t&lt;String&gt;, std::string&gt;
+					    &gt;&gt;
+					    void set_name(String&amp;&amp; name) noexcept(std::is_nothrow_assignable_v&lt;std::string, String&gt;)
+					    { name_ = std::forward&lt;String&gt;(name); }
+					};
+					</code></pre>
+
+					<pre><code class="cpp" data-trim>
+					class employee {
+					    std::string name_;
+					public:
+					    template &lt;typename String, typename = std::enable_if_t&lt;
+					            std::is_convertible_v&lt;std::decay_t&lt;String&gt;, std::string&gt;
+					    &gt;&gt;
+					    void set_name(String&amp;&amp; name) noexcept(std::is_nothrow_assignable_v&lt;std::string, String&gt;)
+					    { name_ = std::forward&lt;String&gt;(name); }
+					};
+					</code></pre>
+				</section>
+			</div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				width: 1440,
+				slideNumber: true,
+				loop: true,
+				autoPlayMedia: true,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
