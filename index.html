@@ -38,9 +38,9 @@
 					double pi = 3.1415926;
 
 					double get_area() {
-					    double area, radius = 1.5;
-					    area = pi * radius * radius;
-					    return area;
+						double area, radius = 1.5;
+						area = pi * radius * radius;
+						return area;
 					}
 					</code></pre>
 				</section>
@@ -57,9 +57,9 @@
 						double const pi = 3.1415926;
 
 						double get_area() {
-						    double const radius = 1.5;
-						    double const area = pi * radius * radius;
-						    return area;
+							double const radius = 1.5;
+							double const area = pi * radius * radius;
+							return area;
 						}
 						</code></pre>
 						<a href="https://godbolt.org/z/99T8Up">code</a>
@@ -76,16 +76,16 @@
 						extern void foo(S s);
 						</code></pre>
 
-						<p class="fragment" data-fragment-index="1">Can compiler optimize a <code>const&</code> in a similiar way?</p>
+						<p class="fragment" data-fragment-index="2">Is this <code>const</code> an illusion?</p>
 						<pre class="fragment" data-fragment-index="1"><code class="cpp" data-trim>
 						struct S;
 						extern void foo(S const&amp; s);
 						</code></pre>
 					</section>
 					<section>
-						<p><strong>No</strong>, <code>const&</code> as a parameter type is complicated</p>
+						<p><code>const&</code> as a parameter type is complicated</p>
 						<p class="fragment"><code>const_cast</code> breaks constness</p>
-						<p class="fragment">Without caution, it may introduce a nasty undefined behavior</p>
+						<p class="fragment">Without caution, it may introduce a nasty <strong>undefined behavior</strong></p>
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim>
@@ -97,9 +97,9 @@
 						</code></pre>
 
 						<p class="fragment" data-fragment-index="2"><strong>ALARM, ALARM, UNDEFINED BEHAVIOR ALARM</strong></p>
-						<pre class="fragment" data-fragment-index="1"><code class="cpp" data-trim>
+						<pre class="fragment" data-fragment-index="1"><code class="cpp" data-trim data-noescape>
 						struct S { int i{}; };
-						S const s;
+						S <mark>const</mark> s;
 						void foo(S const&amp; cs) {
 							const_cast&lt;S&amp;&gt;(cs).i = 3;
 						}
@@ -123,7 +123,7 @@
 							<span class="fragment">mutable </span>int i{};
 						};
 						</code></pre>
-						<p class="fragment">What do <code>const</code> and <code>mutable</code> mean?</p>
+						<p class="fragment"><code>const</code> and <code>mutable</code>, what do they mean?</p>
 					</section>
 					<section>
 						<p>C++98: <code>const</code> means either bitwise constness or logic constness</p>
@@ -143,10 +143,11 @@
 						<pre><code class="cpp" data-trim data-noescape>
 						struct S {
 							void foo() const {
-								i = 3;
+								std::lock_guard lk{m};
+								i += 3;
 							}
 							mutable int i{};
-							mutable std::mutex m{};<span class="fragment">// especially when there are multiple mutable members</span>
+							mutable std::mutex m{};
 						};
 						</code></pre>
 					</section>
@@ -161,10 +162,10 @@
 					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
 
 					double get_area() {
-					    using boost::math::double_constants::pi;
-					    double const radius = 1.5;
-					    double const area = pi * radius * radius;
-					    return area;
+						using boost::math::double_constants::pi;
+						double const radius = 1.5;
+						double const area = pi * radius * radius;
+						return area;
 					}
 					</code></pre>
 				</section>
@@ -179,10 +180,10 @@
 						#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
 
 						constexpr double get_area() {
-						    using boost::math::double_constants::pi;
-						    constexpr double const radius = 1.5;
-						    constexpr double const area = pi * radius * radius;
-						    return area;
+							using boost::math::double_constants::pi;
+							constexpr double const radius = 1.5;
+							constexpr double const area = pi * radius * radius;
+							return area;
 						}
 						</code></pre>
 						<a href="https://godbolt.org/z/D5SCod">constexpr fib</a>/<a href="https://godbolt.org/z/9BQ8UT">constexpr new</a>
@@ -202,7 +203,7 @@
 						<pre><code class="cpp" data-trim>
 						template &lt;auto v&gt;
 						struct Fib {
-							static constexpr auto val = Fib&lt;v-1&gt;::val + Fib&lt;v-2&gt::val;
+							static constexpr auto val = Fib&lt;v-1&gt;::val + Fib&lt;v-2&gt;::val;
 						};
 
 						template &lt;&gt; struct Fib&lt;1&gt; { static constexpr auto val = 1; }
@@ -247,7 +248,7 @@
 					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
 
 					constexpr double get_area(double radius) {
-					    return boost::math::double_constants::pi * radius * radius;
+						return boost::math::double_constants::pi * radius * radius;
 					}
 					</code></pre>
 					<p class="fragment">What if we have different types?</p>
@@ -266,7 +267,7 @@
 
 						template &lt;typename T&gt;
 						constexpr T get_area(T radius) {
-						    return boost::math::double_constants::pi * radius * radius;
+							return boost::math::double_constants::pi * radius * radius;
 						}
 						</code></pre>
 						<p class="fragment">There is one bug might crush your program</p>
@@ -322,20 +323,58 @@
 					</code></pre>
 				</section>
 				<section>
-					<h2>Easy to Use, Hard to Misuse</h2>
-					<ul>
-						<li>Return ref when it is a static</li>
-						<li>Return a smart pointer when it is dyn allocated</li>
-						<li>Never use raw pointers, which likely to be a design flaw</li>
-					</ul>
+					<section>
+						<h2>Easy to Use, Hard to Misuse</h2>
+						<ul>
+							<li>Return ref when it is a static</li>
+							<li>Return a smart pointer when it is dyn allocated</li>
+							<li>Never use raw pointers, which likely to be a design flaw</li>
+						</ul>
 
-					<pre><code class="cpp" data-trim>
-					struct S;
-					std::shared_ptr&lt;S&gt; factory() {
-					    return std::shared_ptr&lt;S&gt;{};
-					};
-					</code></pre>
-					<p class="fragment">What is the performance implication of accessing a static?</p>
+						<pre><code class="cpp" data-trim>
+						struct S;
+						std::shared_ptr&lt;S&gt; factory() {
+							return std::shared_ptr&lt;S&gt;{};
+						};
+						</code></pre>
+						<p class="fragment">What is the performance implication of accessing a static?</p>
+					</section>
+					<section>
+						<h2>C++11 made a promise...</h2>
+						<p class="fragment">initializing a static variable is thread safe.</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						#include &lt;string&gt;
+
+						class S {
+						public:
+							static std::string const&amp; instance() {
+								static std::string const s = "hello";<span class="fragment"> // there is an invisible guard</span>
+								return s;
+							}
+						};
+						</code></pre>
+						<a href="https://godbolt.org/z/N7yTzh">code</a>
+					</section>
+					<section>
+						<p>A better version?</p>
+						<pre><code class="cpp" data-trim>
+						#include &lt;string&gt;
+
+						class S {
+						public:
+							std::string const&amp; instance() {
+								return ref_;
+							}
+						private:
+							std::string const&amp; ref_ = instance_();
+							static std::string const&amp; instance_() {
+								static std::string const s= "hello";
+								return s;
+							}
+						}
+						</code></pre>
+						<a href="https://godbolt.org/z/SF_Urx">code</a>
+					</section>
 				</section>
 				<section>
 					<h2>Always prefer <code>std::make_shared</code> over <code>std::shared_ptr</code></h2>
@@ -343,7 +382,7 @@
 					<pre><code class="cpp" data-trim>
 					struct S;
 					auto factory() {
-					    return std::make_shared&lt;S&gt;{};
+						return std::make_shared&lt;S&gt;{};
 					};
 					</code></pre>
 					<p class="fragment">Is <code>std::shared_ptr</code> thread safe, why?</p>
@@ -358,13 +397,14 @@
 						<pre><code class="cpp" data-trim>
 						struct S;
 						auto factory() {
-						    return std::make_unique&lt;S&gt;{};
+							return std::make_unique&lt;S&gt;{};
 						};
 						</code></pre>
 						<p class="fragment">Fun fact: <code>std::make_unique</code> was missing in C++11, added in C++14</p>
 						<p class="fragment">...partly an oversight,... -- Herb Sutter</p>
 					</section>
 					<section>
+						<h2>Permutation is fun</h2>
 						<pre><code class="cpp" data-trim>
 						void foo(S s);
 						void foo(S&amp;&amp; s);
@@ -435,11 +475,12 @@
 						<p class="fragment">There is a bug with ALL compilers</p>
 					</section>
 					<section>
-						<p>If you have the neccesity to define a destructor...,</p>
+						<p>If you have the necessity to define a destructor...,</p>
 						<p class="fragment">implies you have some resource to manage,</p>
 						<p class="fragment">you should define your own copy/move special functions.</p>
 						<p class="fragment">That's the rationale behind this standard rule,</p>
-						<p class="fragment">and compilers must not generate copy/move ctor/assignment functions for you.</p>
+						<p class="fragment">that if a class has user defined destructor</p>
+						<p class="fragment">the compiler must not generate copy/move ctor/assignment functions for this class.</p>
 						<p class="fragment">However,</p>
 						<p class="fragment">all mainstream compilers still generate copy ctor/assignment functions.</p>
 					</section>
@@ -472,12 +513,11 @@
 
 						int i{3};<span class="fragment"> // int</span>
 						auto i{3};<span class="fragment"> // it's complicated</span>
-						<span class="fragment">// with c++11 flag, before gcc5/clang4.8, it is std::initializer_list, otherwise, it is a int<span>
+						<p class="fragment">// with c++11 flag, before gcc5/clang4.8, it is std::initializer_list, otherwise, it is a int<p>
 						<span class="fragment">auto i = (int){3};</span><span class="fragment"> // int</span>
 						</code></pre>
-
 					</section>
-			       </section>
+				</section>
 				<section>
 					<h2>CTAD (Class Template Argument Deduction)</h2>
 
@@ -500,7 +540,7 @@
 					<h2><code>std::array</code></h2>
 
 					<ul>
-						<li><code>std::array</code> provides more functionality than raw array</li>
+						<li><code>std::array</code> provides more functionalities than raw array</li>
 						<li>No runtime overhead</li>
 						<li>Using raw array in modern code should be considered as a design flaw</li>
 					</ul>
@@ -575,10 +615,10 @@
 						#include &lt;map&gt;
 
 						std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-						    for (auto&amp; [key, value] : m)
-							if (key &gt; 3 + value)
-							    return value;
-						    return {};
+							for (auto&amp; [key, value] : m)
+								if (key &gt; 3 + value)
+									return value;
+							return {};
 						}
 						</code></pre>
 
@@ -592,7 +632,7 @@
 						</code></pre>
 
 						<pre class="fragment"><code class="cpp" data-trim>
-						std::pair&lt;int, int&gt; tmp = std::pair&lt;BigStruct, BigStruct&gt;{};
+						std::pair&lt;BigStruct, BigStruct&gt; tmp = std::pair&lt;BigStruct, BigStruct&gt;{};
 						alias k = tmp.first;
 						alias v = tmp.second;
 						</code></pre>
@@ -601,18 +641,18 @@
 						<pre><code class="cpp" data-trim>
 						struct BigStruct;
 
-						auto &amp;[k, v] = std::pair&lt;BigStruct, BigStruct&gt;{};
+						auto&amp; [k, v] = std::pair&lt;BigStruct, BigStruct&gt;{};
 						</code></pre>
 
 						<pre class="fragment"><code class="cpp" data-trim>
-						std::pair&lt;int, int&gt; &amp;tmp = std::pair&lt;BigStruct, BigStruct&gt;{};
+						std::pair&lt;BigStruct, BigStruct&gt;&amp; tmp = std::pair&lt;BigStruct, BigStruct&gt;{};
 						alias k = tmp.first;
 						alias v = tmp.second;
 						</code></pre>
 					</section>
 				</section>
 				<section>
-					<h2>No Raw <code>for</code> loop - Sean Parent</h2>
+					<h2>No Raw <code>for</code> loops -- Sean Parent</h2>
 
 					<ul>
 						<li>Know your algorithms</li>
@@ -623,15 +663,15 @@
 					#include &lt;algorithm&gt;
 
 					struct F {
-					    bool operator()(std::pair&lt;int, int&gt; p) {
-					        return p.first &gt; 3 + p.second;
-					    }
+						bool operator()(std::pair&lt;int, int&gt; p) {
+							return p.first &gt; 3 + p.second;
+						}
 					};
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
-					    if (auto it=std::find_if(cbegin(m), cend(m), F()); it!=m.end())
-					        return it-&gt;second;
-					    return {};
+						if (auto it=std::find_if(cbegin(m), cend(m), F()); it!=m.end())
+							return it-&gt;second;
+						return {};
 					}
 					</code></pre>
 
@@ -646,9 +686,9 @@
 
 					<pre><code class="cpp" data-trim>
 					struct F final {
-					    [[nodiscard]] constexpr bool operator()(std::pair&lt;int, int&gt; p) const noexcept {
-					        return p.first &gt; 3 + p.second;
-					    }
+						[[nodiscard]] constexpr bool operator()(std::pair&lt;int, int&gt; p) const noexcept {
+							return p.first &gt; 3 + p.second;
+						}
 					};
 					</code></pre>
 
@@ -672,8 +712,7 @@
 						<p class="fragment">Inheritance is the base class of all evil -- Sean Parent</p>
 					</section>
 					<section>
-						<p>Dynamic inheritance is slow because of indirect accessing</p>
-						<p class="fragment">However</p>
+						<p>Because of indirect accessing, dynamic inheritance is slow</p>
 					</section>
 					<section>
 						<p>Many text book examples are wrong</p>
@@ -708,13 +747,13 @@
 					</section>
 					<section>
 						<blockquote>
-							<p>C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do it blows your whole leg off</p>
+							<p>C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do, it blows your whole leg off</p>
 							<p>-- Bjarne Stroustrup</p>
 							<p class="fragment">There are only two kinds of languages: the ones people complain about and the ones nobody uses</p>
 						</blockquote>
 					</section>
 					<section>
-						<h1>Thank you all</h1>
+						<img data-src="img/caution_cpp.png"/>
 					</section>
 				</section>
 				<section>
@@ -1097,9 +1136,7 @@
 					class employee {
 					    std::string name_;
 					public:
-					    template &lt;typename String, typename = std::enable_if_t&lt;
-					            !std::is_same_v&lt;std::decay_t&lt;String&gt;, std::string&gt;
-					    &gt;&gt;
+					    template &lt;typename String, typename = std::enable_if_t&lt;!std::is_same_v&lt;std::decay_t&lt;String&gt;, std::string&gt;&gt;&gt;
 					    void set_name(String&amp;&amp; name) noexcept(std::is_nothrow_assignable_v&lt;std::string, String&gt;)
 					    { name_ = std::forward&lt;String&gt;(name); }
 					};
