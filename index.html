@@ -513,8 +513,11 @@
 
 						int i{3};<span class="fragment"> // int</span>
 						auto i{3};<span class="fragment"> // it's complicated</span>
-						<p class="fragment">// with c++11 flag, before gcc5/clang4.8, it is std::initializer_list, otherwise, it is a int<p>
-						<span class="fragment">auto i = (int){3};</span><span class="fragment"> // int</span>
+						<span class="fragment">// with c++11 flag, before gcc5/clang4.8, it is std::initializer_list, otherwise, it is a int<span>
+						auto i = (int){3};</span><span class="fragment"> // int</span>
+						
+						int i{};<span class="fragment"> // int</span>
+						int i();<span class="fragment"> // int(*)()</span>
 						</code></pre>
 					</section>
 				</section>
@@ -1124,13 +1127,61 @@
 					</blockquote>
 				</section>
 				<section>
-					<h2>The price of writing efficient code</h2>
+					<pre><code class="cpp" data-trim>
+					char foo() {
+						return 3["abcdefghijklmnopqrstuvwxyz"];
+					}
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim>
+					extern int foo();
 
-					<blockquote>
-					<p class="fragment">This is unteachable...</p>
-					<p class="fragment">There are very few people in the world can write it with confidence, I'm not one of them.</p>
-					<p class="fragment">-- Bjarne Stroustrup</p>
-					</blockquote>
+					auto (*fp)() -&gt; int{foo};
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim>
+					struct S;
+
+					extern void foo(S(S));
+					</code></pre>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
+					bool bar() {
+						if (false; true)
+							return false;
+						return true;
+					}
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim>
+					bool bar() {
+						if (struct S { int i{}; }; true)
+							return false;
+						return true;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
+extern void foo();
+
+void (*fp)() =
+**********************************
+/********************************/
+/*      This is C++!            */
+/********************************/
+**********************************
+foo;
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim>
+					extern extern "C++" extern "C" extern "C++" int i;
+
+					extern "C++" extern "C" extern "C++" extern int i;
+					</code></pre>
+					<p class="fragment">gcc9.2 rejects both</p>
+					<p class="fragment">msvc19.22 rejects the first</p>
+					<p class="fragment">clang9 thinks both are ok</p>
+				</section>
+				<section>
+					<h2>The price of writing efficient code</h2>
 
 					<pre><code class="cpp" data-trim>
 					class employee {
@@ -1141,6 +1192,12 @@
 					    { name_ = std::forward&lt;String&gt;(name); }
 					};
 					</code></pre>
+
+					<blockquote>
+					<p class="fragment">This is unteachable...</p>
+					<p class="fragment">There are very few people in the world can write it with confidence, I'm not one of them.</p>
+					<p class="fragment">-- Bjarne Stroustrup</p>
+					</blockquote>
 				</section>
 			</div>
 		</div>
