@@ -296,14 +296,17 @@
 						<p>Multiple ways to solve one problem</p>
 						<pre><code class="cpp" data-trim>
 						template &lt;typename T&gt;
+
 						auto add(T a, T b) { return a + b; }
 						</code></pre>
 						<pre class="fragment"><code class="cpp" data-trim>
 						template &lt;typename R, typename T&gt;
+
 						R add(T a, T b) { return a + b; }
 						</code></pre>
 						<pre class="fragment"><code class="cpp" data-trim>
 						template &lt;typename R, typename T&gt;
+
 						std::decay_t&lt;T&gt; add(T a, T b) { return a + b; }
 						</code></pre>
 					</section>
@@ -517,7 +520,7 @@
 						auto i = (int){3};</span><span class="fragment"> // int</span>
 						
 						int i{};<span class="fragment"> // int</span>
-						int i();<span class="fragment"> // int(*)()</span>
+						int i();<span class="fragment"> // function declaration</span>
 						</code></pre>
 					</section>
 				</section>
@@ -776,10 +779,10 @@
 
 					<pre class="fragment"><code class="cpp" data-trim>
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
-					    if (auto it=std::find_if(cbegin(m), cend(m),
-					            [](std::pair&lt;int, int&gt; const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
-					        return it-&gt;second;
-					    return {};
+					if (auto it=std::find_if(cbegin(m), cend(m),
+								[](std::pair&lt;int, int&gt; const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
+							return it-&gt;second;
+						return {};
 					}
 					</code></pre>
 				</section>
@@ -788,10 +791,10 @@
 
 					<pre><code class="cpp" data-trim>
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
-					    if (auto it=std::find_if(cbegin(m), cend(m),
-					            [](auto const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
-					        return it-&gt;second;
-					    return {};
+					if (auto it=std::find_if(cbegin(m), cend(m),
+								[](auto const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
+							return it-&gt;second;
+						return {};
 					}
 					</code></pre>
 				</section>
@@ -850,15 +853,15 @@
 					<pre><code class="cpp" data-trim>
 					template &lt;typename T1, typename T2, typename T3&gt;
 					void print(T1 const&amp; t1, T2 const&amp; t2, T3 const&amp; t3) {
-					    std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3;
+						std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3;
 					}
 					template &lt;typename T1, typename T2, typename T3, typename T4&gt;
 					void print(T1 const&amp; t1, T2 const&amp; t2, T3 const&amp; t3, T4 const&amp; t4) {
-					    std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3 &lt;&lt; ' ' &lt;&lt; t4;
+						std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3 &lt;&lt; ' ' &lt;&lt; t4;
 					}
 					template &lt;typename T1, typename T2, typename T3, typename T4, typename T5&gt;
 					void print(T1 const&amp; t1, T2 const&amp; t2, T3 const&amp; t3, T4 const&amp; t4, T5 const&amp; t5) {
-					    std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3 &lt;&lt; ' ' &lt;&lt; t4 &lt;&lt; ' ' &lt;&lt; t5;
+						std::cout &lt;&lt; t1 &lt;&lt; ' ' &lt;&lt; t2 &lt;&lt; ' ' &lt;&lt; t3 &lt;&lt; ' ' &lt;&lt; t4 &lt;&lt; ' ' &lt;&lt; t5;
 					}
 					</code></pre>
 				</section>
@@ -871,7 +874,7 @@
 
 					template &lt;typename ... Ts&gt;
 					void print(Ts const&amp; ... ts) {
-					    (void)std::initializer_list&lt;int&gt;{(std::cout &lt;&lt; ts &lt;&lt; ' ', 0)...};
+						(void)std::initializer_list&lt;int&gt;{(std::cout &lt;&lt; ts &lt;&lt; ' ', 0)...};
 					}
 					</code></pre>
 				</section>
@@ -881,7 +884,7 @@
 					<pre><code class="cpp" data-trim>
 					template &lt;typename ... Ts&gt;
 					void print(Ts const&amp; ... ts) {
-					    (..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
+						(..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
 					}
 					</code></pre>
 
@@ -893,8 +896,8 @@
 					<pre><code class="cpp" data-trim>
 					template &lt;typename T, typename ... Ts&gt;
 					void print(T const&amp; t, Ts const&amp; ... ts) {
-					    std::cout &lt;&lt; t;
-					    (..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
+						std::cout &lt;&lt; t;
+						(..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
 					}
 					</code></pre>
 
@@ -908,8 +911,8 @@
 
 					template &lt;typename T, typename ... Ts&gt;
 					void print(T const&amp; t, Ts const&amp; ... ts) {
-					    std::cout &lt;&lt; t;
-					    (..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
+						std::cout &lt;&lt; t;
+						(..., [](auto const&amp; t) { std::cout &lt;&lt; ' ' &lt;&lt; t; }(ts));
 					}
 					</code></pre>
 				</section>
@@ -925,15 +928,15 @@
 
 					template &lt;typename ... Ts&gt;
 					void switch_func(Ts &amp;&amp; ... ts) {
-					    if constexpr (sizeof...(ts) &gt; 3) {
-					        std::cout &lt;&lt; "&gt;3";
-					    } else {
-					        std::cout &lt;&lt; "&lt;=3";
-					    }
+						if constexpr (sizeof...(ts) &gt; 3) {
+							std::cout &lt;&lt; "&gt;3";
+						} else {
+							std::cout &lt;&lt; "&lt;=3";
+						}
 					}
 
 					int main() {
-					    switch_func(3, 5.7);
+						switch_func(3, 5.7);
 					}
 					</code></pre>
 
@@ -967,8 +970,8 @@
 					extern void bar();
 
 					void foo() {
-					    for (int i=0; i&lt;7; ++i)
-					        bar();
+						for (int i=0; i&lt;7; ++i)
+							bar();
 					}
 					</code></pre>
 					<a href="https://godbolt.org/z/45gGNa">code</a>
@@ -982,8 +985,8 @@
 					extern int a[1'000'000];
 
 					void foo() {
-					    for (std::size_t i=0; i&lt;std::size(a); ++i)
-						a[i] = 0;
+						for (std::size_t i=0; i&lt;std::size(a); ++i)
+							a[i] = 0;
 					}
 					</code></pre>
 					<a href="https://godbolt.org/z/_ruzU_">code</a>
@@ -994,8 +997,8 @@
 					#include &lt;cstddef&gt;
 
 					void foo(int* a, std::size_t size) {
-					    for (std::size_t i=0; i&lt;size; ++i)
-						a[i] = 0;
+						for (std::size_t i=0; i&lt;size; ++i)
+							a[i] = 0;
 					}
 					</code></pre>
 					<a href="https://godbolt.org/z/gvUvgy">code</a>
@@ -1007,7 +1010,7 @@
 					#include &lt;algorithm&gt;
 
 					void foo(int* a, std::size_t size) {
-					    std::generate(a, a+size, []{return 0;});
+						std::generate(a, a+size, []{return 0;});
 					}
 					</code></pre>
 					<a href="https://godbolt.org/z/M5AGnt">code</a>
@@ -1036,7 +1039,7 @@
 					<p>What is the purpose of this function</p>
 					<pre><code class="cpp" data-trim>
 					bool foo(int n) {
-					    return (n+1) &gt; n;
+						return (n+1) &gt; n;
 					}
 					</code></pre>
 
@@ -1120,7 +1123,7 @@
 					<a href="https://godbolt.org/z/NX-rg8">code</a>
 				</section>
 				<section>
-					<h2><strong>THE BAD</strong></h2>
+					<h2><strong>THE BAD NEWS</strong></h2>
 					<blockquote>
 						<p>C++ has indeed become too "expert friendly".</p>
 						<p>-- Bjarne Stroustrup, 2014</p>
@@ -1185,18 +1188,18 @@ foo;
 
 					<pre><code class="cpp" data-trim>
 					class employee {
-					    std::string name_;
+						std::string name_;
 					public:
-					    template &lt;typename String, typename = std::enable_if_t&lt;!std::is_same_v&lt;std::decay_t&lt;String&gt;, std::string&gt;&gt;&gt;
-					    void set_name(String&amp;&amp; name) noexcept(std::is_nothrow_assignable_v&lt;std::string, String&gt;)
-					    { name_ = std::forward&lt;String&gt;(name); }
+						template &lt;typename String, typename = std::enable_if_t&lt;!std::is_same_v&lt;std::decay_t&lt;String&gt;, std::string&gt;&gt;&gt;
+						void set_name(String&amp;&amp; name) noexcept(std::is_nothrow_assignable_v&lt;std::string, String&gt;)
+						{ name_ = std::forward&lt;String&gt;(name); }
 					};
 					</code></pre>
 
 					<blockquote>
-					<p class="fragment">This is unteachable...</p>
-					<p class="fragment">There are very few people in the world can write it with confidence, I'm not one of them.</p>
-					<p class="fragment">-- Bjarne Stroustrup</p>
+						<p class="fragment">This is unteachable...</p>
+						<p class="fragment">There are very few people in the world can write it with confidence, I'm not one of them.</p>
+						<p class="fragment">-- Bjarne Stroustrup</p>
 					</blockquote>
 				</section>
 			</div>
