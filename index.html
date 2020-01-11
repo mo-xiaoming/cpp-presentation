@@ -661,6 +661,23 @@
 						alias v = tmp.second;
 						</code></pre>
 					</section>
+					<section>
+						<p>Believe or not,</p>
+						<p class="fragment">how to declare/initialize a variable,</p>
+						<p class="fragment">how to declare/define signatures of a function,</p>
+						<p class="fragment">how to declare/define a very basic class/struct,</p>
+						<p class="fragment">after all these years, are still very hot topices in C++ community</p>
+					</section>
+					<section>
+						<blockquote>
+							<p>C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do, it blows your whole leg off</p>
+							<p>-- Bjarne Stroustrup</p>
+							<p class="fragment">There are only two kinds of languages: the ones people complain about and the ones nobody uses</p>
+						</blockquote>
+					</section>
+					<section>
+						<img data-src="img/caution_cpp.png"/>
+					</section>
 				</section>
 				<section>
 					<h2>No Raw <code>for</code> loops -- Sean Parent</h2>
@@ -706,66 +723,20 @@
 					<p class="fragment">What does a <code>const</code> member function imply?</p>
 				</section>
 				<section>
-					<section>
-						<ul>
-							<li>override</li>
-						</ul>
+					<ul>
+						<li>override</li>
+					</ul>
 
-						<pre><code class="cpp" data-trim>
-						struct B {
-							virtual void foo();
-						};
-						struct D : B {
-							void foo() override;
-						}
-						</code></pre>
+					<pre><code class="cpp" data-trim>
+					struct B {
+						virtual void foo();
+					};
+					struct D : B {
+						void foo() override;
+					}
+					</code></pre>
 
-						<p class="fragment">Inheritance is the base class of all evil -- Sean Parent</p>
-					</section>
-					<section>
-						<p>Because of indirect accessing, dynamic inheritance is slow</p>
-					</section>
-					<section>
-						<p>Many text book examples are wrong</p>
-						<p class="fragment">What is an inheritance?</p>
-						<p class="fragment">Inheritance is a relationship of 'is-a'</p>
-						<pre class="fragment"><code class="cpp" data-trim data-noescape>
-						struct Base {
-							virtual void foo();
-						};
-						struct Derived : Base {
-							void foo() override;
-							<span class="fragment">virtual void bar();</span>
-						};
-						</code></pre>
-						<pre class="fragment"><code class="cpp" data-trim>
-						struct Rectangle {
-							virtual double setWidth();
-							virtual double setHeight();
-						};
-						struct Square : Rectangle {
-							double setWidth() override;
-							double setHeight() override;
-						};
-						</code></pre>
-					</section>
-					<section>
-						<p>Believe or not,</p>
-						<p class="fragment">how to declare/initialize a variable,</p>
-						<p class="fragment">how to declare/define signatures of a function,</p>
-						<p class="fragment">how to declare/define a very basic class/struct,</p>
-						<p class="fragment">after all these years, are still very hot topices in C++ community</p>
-					</section>
-					<section>
-						<blockquote>
-							<p>C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do, it blows your whole leg off</p>
-							<p>-- Bjarne Stroustrup</p>
-							<p class="fragment">There are only two kinds of languages: the ones people complain about and the ones nobody uses</p>
-						</blockquote>
-					</section>
-					<section>
-						<img data-src="img/caution_cpp.png"/>
-					</section>
+					<p class="fragment">Inheritance is the base class of all evil -- Sean Parent</p>
 				</section>
 				<section>
 					I hope we have functions use <strong><code>constexpr</code></strong>, <strong><code>const</code></strong>, <strong><code>noexcept</code></strong> as default attributes
