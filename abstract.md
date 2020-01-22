@@ -7,11 +7,12 @@
 * More static checks
 * More compile time calculations
 * More expressive
-* Faster
+* Faster by default
 
    and
 
-* More (Default) Hardening Options, `_FORTIFY_SOURCE=2`, `-fstack-protector-strong` etc.
+* Compilers have more (Default) Hardening Options, `_FORTIFY_SOURCE=2`, `-fstack-protector-strong` etc.
+* Compilers added/improved numerous optimizations and sanitizers
 
 ### Tips from 1,000 miles high
 
@@ -32,9 +33,12 @@
   > ...we are writting C++, the rule can't be that simple.
   > -- Nicolai M. Josuttis
 
-* Multiple ways to do one thing, Even some methods are better than others, you have to be familier with all other inferior ones, because they are used by other people.
-* C++11 improves C++98 in multiple ways, but there are catches.
+* Multiple ways to do one thing. Even some methods are better than others, you have to be familier with all other inferior ones, because they are used by other people.
+* C++11 improves C++98 in multiple ways, but there are traps.
 * Sometimes, compilers have to work against C++ standard to maintain backward compatibility
 * Lots of bad reputations C++ got, are caused by people thought they were writting "efficient" code
 
 ## The Ugly, Undefined Behavior
+
+>In general, whenever you encounter undefined behavior, anything might happen. The application may crash, it may freeze, it may eject your CD-ROM drive or make demons come out of your nose. It may format your harddrive or email all your porn to your grandmother.
+> -- [stackoverflow](https://stackoverflow.com/questions/1239938/accessing-an-array-out-of-bounds-gives-no-error-why)
