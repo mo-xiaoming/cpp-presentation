@@ -1,10 +1,40 @@
 >We get a mess, the mess get worse, so it's time to switch to a new language. -- Nicolai Josuttis
 
+- [Initialization of C++ is Bonkers](#initialization-of-c-is-bonkers)
+  - [Default initialization](#default-initialization)
+    - [Syntax](#syntax)
+    - [Examples & Traps](#examples--traps)
+    - [Summary](#summary)
+  - [Copy initialization](#copy-initialization)
+    - [Syntax](#syntax-1)
+    - [Summary](#summary-1)
+  - [Aggregate intialization](#aggregate-intialization)
+    - [Syntax](#syntax-2)
+    - [Examples & Traps](#examples--traps-1)
+    - [Summary](#summary-2)
+  - [Direct initialization](#direct-initialization)
+    - [Syntax](#syntax-3)
+    - [Examples & Traps](#examples--traps-2)
+    - [Summary](#summary-3)
+  - [Value initialization](#value-initialization)
+    - [Syntax](#syntax-4)
+    - [Examples & Traps](#examples--traps-3)
+    - [Summary](#summary-4)
+  - [List initialization](#list-initialization)
+    - [Syntax](#syntax-5)
+    - [Traps](#traps)
+    - [Summary](#summary-5)
+  - [Summary](#summary-6)
+  - [Seeking for better code guide](#seeking-for-better-code-guide)
+  - [The Future](#the-future)
+  - [Conclusion](#conclusion)
+  - [Reference](#reference)
+
 # Initialization of C++ is Bonkers
 
 ![bonkers](img/init_in_cpp_is_bonders.png)
 
-Intializer may be one the the following
+Intializer may be one of the following
 
 1. `()`
 2. `=`
@@ -1102,7 +1132,7 @@ Nicolai Josuttis,
 Herb Sutter,
 - `auto var = init` to make type track, deduce
 - `auto var = type{init}` or `type var{init}` to make type stick, commit
-  
+ 
 Timur Doumler,
 - Use `= value` for simple value types like `int` etc
 - Use `= {args}` and `= {}` for :
