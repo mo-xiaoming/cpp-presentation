@@ -1161,6 +1161,29 @@ foo;
 					<p class="fragment">clang9 thinks both are ok</p>
 				</section>
 				<section>
+					<pre><code class="cpp" data-trim>
+					int main() {
+						int x = 100;
+						x = x---x
+						    |x--|
+						    x---x;
+						return x;
+					}
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim>
+					#include &lt;iostream&gt;
+
+					struct S {
+						static void foo() { std::cout &lt;&lt; "hello\n"; }
+					};
+					
+					int main() {
+						S *s = nullptr;
+						s-&gt;foo();
+					}
+					</code></pre>
+				</section>
+				<section>
 					<h2>The price of writing efficient code</h2>
 
 					<pre><code class="cpp" data-trim>
@@ -1178,6 +1201,24 @@ foo;
 						<p class="fragment">There are very few people in the world can write it with confidence, I'm not one of them.</p>
 						<p class="fragment">-- Bjarne Stroustrup</p>
 					</blockquote>
+				</section>
+				<section>
+					<h2>The price of writing correct code</h2>
+
+					<pre><code class="cpp" data-trim>
+					#include &lt;iostream&gt;
+
+					int main() {
+						int a = -1;
+						unsigned b = 1;
+
+						if (a &lt;= b) {
+							std::cout &lt;&lt; "-1 &lt;= 1";
+						} else {
+							std::cout &lt;&lt; "-1 &gt; 1";
+						}
+					}
+					</code></pre>
 				</section>
 			</div>
 		</div>
