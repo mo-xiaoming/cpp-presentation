@@ -1142,6 +1142,14 @@ Timur Doumler,
 - Use `{args}` and `{}` for passing & returning temporaries
 - Use `(args)` to call constructors and always `auto` to eliminate vexing parse, except in direct member initializer (DMIs) because auto is not allowed there
 
+P.S. Don't get me start with assignment operator
+
+```cpp
+std::string s;
+s = 50;
+std::cout << s;	// 2
+```
+
 ## Reference
 
 1. [[MUC++] Nicolai Josuttis - "The Nightmare of Initialization in C++"](https://www.youtube.com/watch?v=MTzUvmREiu0)
