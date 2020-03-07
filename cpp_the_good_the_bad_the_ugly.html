@@ -315,6 +315,29 @@
 						</code></pre>
 						<p class="fragment">And many others...</p>
 					</section>
+					<section>
+						<pre><code class="cpp" data-trim>
+						std::string const&amp; get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
+								std::string const&amp; key, std::string const&amp; dflt) {
+							if (auto p = settings.find(key); p != settings.end()) {
+								return p-&gt;second;
+							}
+							return dflt;
+						}
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim>
+						auto&amp;v = get_default(m, k, "127.0.0.1");
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim>
+						std::string get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
+								std::string const&amp; key, std::string&amp;&amp; dflt) {
+							if (auto p = settings.find(key); p != settings.end()) {
+								return p-&gt;second;
+							}
+							return dflt;
+						}
+						</code></pre>
+					</section>
 				</section>
 				<section>
 					<h2>What's wrong with the <code>factory()</code> API</h2>

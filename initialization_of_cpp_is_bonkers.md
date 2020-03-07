@@ -401,6 +401,17 @@ vector<int> v(istream_iterator<int>(cin), istream_iterator<int>());
 
 Because in C, `void foo(int a)` and `void foo(int(a))` are the same thing.
 
+It can get worse,
+```cpp
+void C::update() {
+	unique_lock<std::mutex>(mutex_);
+	// this locks nothing, it merely declares a new variable mutex_
+	// which shadows the member variable
+	do_update();
+}
+```
+**RAII + default ctor can be dangerous**
+
 To fix it, an extra parens are needed,
 
 ```cpp
