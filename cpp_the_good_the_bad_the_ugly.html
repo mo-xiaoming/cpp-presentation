@@ -16,21 +16,21 @@
 		<!-- Printing and PDF exports -->
 		<script>
 			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
+link.rel = 'stylesheet';
+link.type = 'text/css';
+link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
 				<section>
-				    <h1>C++, the good, the bad and the ugly</h1>
+					<h1>C++, the good, the bad and the ugly</h1>
 				</section>
 				<section>
-				    <h2>The Good Parts</h2>
-				    <p>An evolution from (pre) C++98 to C++17</p>
+					<h2>The Good Parts</h2>
+					<p>An evolution from (pre) C++98 to C++17</p>
 				</section>
 				<section>
 					<h2>A classic C++ example in many text books</h2>
@@ -66,7 +66,7 @@
 
 						<p class="fragment">What does <code>const</code> really mean?</p>
 						<p class="fragment">What's your "intention"?</p>
-					    </textarea>
+						</textarea>
 					</section>
 					<section>
 						<h2>Value is good</h2>
@@ -86,6 +86,7 @@
 						<p><code>const&</code> as a parameter type is complicated</p>
 						<p class="fragment"><code>const_cast</code> breaks constness</p>
 						<p class="fragment">Without caution, it may introduce a nasty <strong>undefined behavior</strong></p>
+						<p class="fragment"><a href="https://godbolt.org/z/2krtVY">can be bad for optimization</a></p>
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim>
@@ -409,7 +410,7 @@
 				</section>
 				<section>
 					<h2>Always prefer <code>std::make_shared</code> over <code>std::shared_ptr</code></h2>
-					
+
 					<pre><code class="cpp" data-trim>
 					struct S;
 					auto factory() {
@@ -474,9 +475,9 @@
 
 						<pre><code class="cpp" data-trim>
 						struct S {
-						    S() : data(new int) {}
-						    ~S() { delete data; }
-						    int* data{};
+								S() : data(new int) {}
+								~S() { delete data; }
+								int* data{};
 						};
 						</code></pre>
 						<p class="fragment">There is a bug</p>
@@ -546,7 +547,7 @@
 						auto i{3};<span class="fragment"> // it's complicated</span>
 						<span class="fragment">// with c++11 flag, before gcc5/clang4.8, it is std::initializer_list, otherwise, it is a int<span>
 						auto i = (int){3};</span><span class="fragment"> // int</span>
-						
+
 						int i(3);<span class="fragment"> // int</span>
 						int i();<span class="fragment"> // function declaration</span>
 						int i{};<span class="fragment"> // int</span>
@@ -591,10 +592,10 @@
 					#include &lt;map&gt;
 
 					int foo(std::map&lt;int, int&gt; const&amp; m) {
-					    for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
-					        if (it-&gt;first &gt; 3 + it-&gt;second)
-					            return it-&gt;second;
-					    return -1;
+							for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
+									if (it-&gt;first &gt; 3 + it-&gt;second)
+											return it-&gt;second;
+							return -1;
 					}
 					</code></pre>
 				</section>
@@ -605,10 +606,10 @@
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-					    for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
-					        if (it-&gt;first &gt; 3 + it-&gt;second)
-					            return it-&gt;second;
-					    return {};
+							for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
+									if (it-&gt;first &gt; 3 + it-&gt;second)
+											return it-&gt;second;
+							return {};
 					}
 					</code></pre>
 
@@ -621,10 +622,10 @@
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-					    for (auto it=m.begin(); it!=m.end(); ++it)
-					        if (it-&gt;first &gt; 3 + it-&gt;second)
-					            return it-&gt;second;
-					    return {};
+							for (auto it=m.begin(); it!=m.end(); ++it)
+									if (it-&gt;first &gt; 3 + it-&gt;second)
+											return it-&gt;second;
+							return {};
 					}
 					</code></pre>
 				</section>
@@ -635,10 +636,10 @@
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-					    for (auto&amp; p : m)
-					        if (p.first &gt; 3 + p.second)
-					            return p.second;
-					    return {};
+							for (auto&amp; p : m)
+									if (p.first &gt; 3 + p.second)
+											return p.second;
+							return {};
 					}
 					</code></pre>
 				</section>
@@ -1018,10 +1019,10 @@
 				<section>
 					<p>Bjarne Stroustrup says,</p>
 					<blockquote>
-					Within C++, there is a much smaller and clearer language struggling to get out.
+						Within C++, there is a much smaller and clearer language struggling to get out.
 					</blockquote>
 					<blockquote class="fragment">
-					And no, that smaller and cleaner language is not Java or C#.
+						And no, that smaller and cleaner language is not Java or C#.
 					</blockquote>
 				</section>
 				<section>
@@ -1031,8 +1032,8 @@
 						<li class="fragment">Undefined Behavior</li>
 					</ul>
 					<blockquote>
-					<p>If you think it's simple, then you have misunderstood the problem.</p>
-					<p>-- Bjarne Stroustrup</p>
+						<p>If you think it's simple, then you have misunderstood the problem.</p>
+						<p>-- Bjarne Stroustrup</p>
 					</blockquote>
 				</section>
 				<section>
@@ -1188,8 +1189,8 @@ foo;
 					int main() {
 						int x = 100;
 						x = x---x
-						    |x--|
-						    x---x;
+								|x--|
+								x---x;
 						return x;
 					}
 					</code></pre>
@@ -1199,7 +1200,7 @@ foo;
 					struct S {
 						static void foo() { std::cout &lt;&lt; "hello\n"; }
 					};
-					
+
 					int main() {
 						S *s = nullptr;
 						s-&gt;foo();
@@ -1247,7 +1248,7 @@ foo;
 						<li class="fragment">Don't do math in unsigned integers</li>
 						<li class="fragment">Don't do math in C++</li>
 						<li class="fragment">Don't use C++</li>
-					</ul>	
+					</ul>
 				</section>
 			</div>
 		</div>
