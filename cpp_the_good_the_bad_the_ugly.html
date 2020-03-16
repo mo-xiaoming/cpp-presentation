@@ -16,10 +16,10 @@
 		<!-- Printing and PDF exports -->
 		<script>
 			var link = document.createElement( 'link' );
-link.rel = 'stylesheet';
-link.type = 'text/css';
-link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-document.getElementsByTagName( 'head' )[0].appendChild( link );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
 		</script>
 	</head>
 	<body>
@@ -62,7 +62,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 							return area;
 						}
 						</code></pre>
-						<a href="https://godbolt.org/z/99T8Up">code</a>
+						<a href="https://godbolt.org/z/jHLVJJ">code</a>
 
 						<p class="fragment">What does <code>const</code> really mean?</p>
 						<p class="fragment">What's your "intention"?</p>
@@ -83,10 +83,10 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 						</code></pre>
 					</section>
 					<section>
-						<p><code>const&</code> as a parameter type is complicated</p>
+						<p><code>const&amp;</code> as a parameter type is complicated</p>
 						<p class="fragment"><code>const_cast</code> breaks constness</p>
 						<p class="fragment">Without caution, it may introduce a nasty <strong>undefined behavior</strong></p>
-						<p class="fragment"><a href="https://godbolt.org/z/2krtVY">can be bad for optimization</a></p>
+						<p class="fragment"><a href="https://godbolt.org/z/HMmqJf">can be bad for optimization</a></p>
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim>
@@ -97,7 +97,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 						}
 						</code></pre>
 
-						<p class="fragment" data-fragment-index="2"><strong>ALARM, ALARM, UNDEFINED BEHAVIOR ALARM</strong></p>
+						<p class="fragment" data-fragment-index="2"><strong>ALARM, ALARM, UNDEFINED BEHAVIOR ALERT</strong></p>
 						<pre class="fragment" data-fragment-index="1"><code class="cpp" data-trim data-noescape>
 						struct S { int i{}; };
 						S <mark>const</mark> s;
@@ -153,7 +153,30 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 						</code></pre>
 					</section>
 					<section>
-						<p>C++11 adds better support for <code>const_iterator</code>, and non-member functions <code>std::begin</code> and <code>std::end</code></p>
+						<pre><code class="cpp" data-trim>
+						std::string const&amp; get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
+								std::string const&amp; key, std::string const&amp; dflt) {
+							if (auto p = settings.find(key); p != settings.end()) {
+								return p-&gt;second;
+							}
+							return dflt;
+						}
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim>
+						auto&amp; v = get_default(m, k, "127.0.0.1");
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim>
+						std::string get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
+								std::string const&amp; key, std::string&amp;&amp; dflt) {
+							if (auto p = settings.find(key); p != settings.end()) {
+								return p-&gt;second;
+							}
+							return dflt;
+						}
+						</code></pre>
+					</section>
+					<section>
+						<p>Fun fact: C++11 adds better support for <code>const_iterator</code>, and non-member functions <code>std::begin</code> and <code>std::end</code></p>
 						<p class="fragment">...an oversight during standardization, ...failed to add <code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>crbegin</code>, and <code>crend</code>. -- Scott Meyers</p>
 					</section>
 				</section>
@@ -191,7 +214,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 							return area;
 						}
 						</code></pre>
-						<a href="https://godbolt.org/z/D5SCod">constexpr fib</a>/<a href="https://godbolt.org/z/9BQ8UT">constexpr new</a>
+						<a href="https://godbolt.org/z/eJCER7">constexpr fib</a>/<a href="https://godbolt.org/z/GtPMYX">constexpr new</a>
 					</section>
 					<section>
 						<h2>This is C++, we got lots of options</h2>
@@ -214,7 +237,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 						template &lt;&gt; struct Fib&lt;1&gt; { static constexpr auto val = 1; }
 						template &lt;&gt; struct Fib&lt;2&gt; { static constexpr auto val = 2; }
 						</code></pre>
-						<a href="https://godbolt.org/z/4sWWS_">code</a>
+						<a href="https://godbolt.org/z/FGdXDC">code</a>
 					</section>
 					<section>
 						<p><code>struct</code> functor<p>
@@ -231,7 +254,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 							int n1{1};
 						};
 						</code></pre>
-						<a href="https://godbolt.org/z/RRA3Z6">code</a>
+						<a href="https://godbolt.org/z/C5wHr2">code</a>
 					</section>
 					<section>
 						<p><code>lambda</code><p>
@@ -316,29 +339,6 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 						</code></pre>
 						<p class="fragment">And many others...</p>
 					</section>
-					<section>
-						<pre><code class="cpp" data-trim>
-						std::string const&amp; get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
-								std::string const&amp; key, std::string const&amp; dflt) {
-							if (auto p = settings.find(key); p != settings.end()) {
-								return p-&gt;second;
-							}
-							return dflt;
-						}
-						</code></pre>
-						<pre class="fragment"><code class="cpp" data-trim>
-						auto&amp;v = get_default(m, k, "127.0.0.1");
-						</code></pre>
-						<pre class="fragment"><code class="cpp" data-trim>
-						std::string get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
-								std::string const&amp; key, std::string&amp;&amp; dflt) {
-							if (auto p = settings.find(key); p != settings.end()) {
-								return p-&gt;second;
-							}
-							return dflt;
-						}
-						</code></pre>
-					</section>
 				</section>
 				<section>
 					<h2>What's wrong with the <code>factory()</code> API</h2>
@@ -385,27 +385,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 							}
 						};
 						</code></pre>
-						<a href="https://godbolt.org/z/N7yTzh">code</a>
-					</section>
-					<section>
-						<p>A better version?</p>
-						<pre><code class="cpp" data-trim>
-						#include &lt;string&gt;
-
-						class S {
-						public:
-							std::string const&amp; instance() {
-								return ref_;
-							}
-						private:
-							std::string const&amp; ref_ = instance_();
-							static std::string const&amp; instance_() {
-								static std::string const s= "hello";
-								return s;
-							}
-						}
-						</code></pre>
-						<a href="https://godbolt.org/z/SF_Urx">code</a>
+						<a href="https://godbolt.org/z/tR4XGk">code</a> / <a href="https://godbolt.org/z/TyFhS7">better version></a>
 					</section>
 				</section>
 				<section>
@@ -470,22 +450,17 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 					<section>
 						<h2>RAII (Resource Requisition Is Initialization)</h2>
 						<ul>
-							<li>No memory leak</li>
+							<li>No memory leak, maybe</li>
 						</ul>
 
 						<pre><code class="cpp" data-trim>
 						struct S {
-								S() : data(new int) {}
-								~S() { delete data; }
-								int* data{};
+							S() : data(new int) {}
+							~S() { delete data; }
+							int* data{};
 						};
 						</code></pre>
 						<p class="fragment">There is a bug</p>
-					</section>
-					<section>
-						<p>Believe or not</p>
-						<p class="fragment">Mostly...,</p>
-						<p class="fragment">it is not your fault</p>
 					</section>
 				</section>
 				<section>
@@ -592,10 +567,10 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 					#include &lt;map&gt;
 
 					int foo(std::map&lt;int, int&gt; const&amp; m) {
-							for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
-									if (it-&gt;first &gt; 3 + it-&gt;second)
-											return it-&gt;second;
-							return -1;
+						for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
+							if (it-&gt;first &gt; 3 + it-&gt;second)
+								return it-&gt;second;
+						return -1;
 					}
 					</code></pre>
 				</section>
@@ -606,10 +581,10 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-							for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
-									if (it-&gt;first &gt; 3 + it-&gt;second)
-											return it-&gt;second;
-							return {};
+						for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
+							if (it-&gt;first &gt; 3 + it-&gt;second)
+								return it-&gt;second;
+						return {};
 					}
 					</code></pre>
 
@@ -622,10 +597,10 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-							for (auto it=m.begin(); it!=m.end(); ++it)
-									if (it-&gt;first &gt; 3 + it-&gt;second)
-											return it-&gt;second;
-							return {};
+						for (auto it=m.begin(); it!=m.end(); ++it)
+							if (it-&gt;first &gt; 3 + it-&gt;second)
+								return it-&gt;second;
+						return {};
 					}
 					</code></pre>
 				</section>
@@ -636,10 +611,10 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-							for (auto&amp; p : m)
-									if (p.first &gt; 3 + p.second)
-											return p.second;
-							return {};
+						for (auto&amp; p : m)
+							if (p.first &gt; 3 + p.second)
+								return p.second;
+						return {};
 					}
 					</code></pre>
 				</section>
@@ -780,7 +755,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 
 					<pre class="fragment"><code class="cpp" data-trim>
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
-					if (auto it=std::find_if(cbegin(m), cend(m),
+						if (auto it=std::find_if(cbegin(m), cend(m),
 								[](std::pair&lt;int, int&gt; const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
 							return it-&gt;second;
 						return {};
@@ -792,7 +767,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 
 					<pre><code class="cpp" data-trim>
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
-					if (auto it=std::find_if(cbegin(m), cend(m),
+						if (auto it=std::find_if(cbegin(m), cend(m),
 								[](auto const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
 							return it-&gt;second;
 						return {};
@@ -815,7 +790,7 @@ document.getElementsByTagName( 'head' )[0].appendChild( link );
 				<section>
 					<h2>How about <code>std::string</code></h2>
 					<ul>
-						<li><span class="fragment">It allocates</span><span class="fragment"> sometimes</span></li>
+						<li><span class="fragment"><a href="http://localhost:10240/z/kim7D1">It allocates</a></span><span class="fragment"> <a href="http://localhost:10240/z/a62eaX">sometimes</a></span></li>
 					</ul>
 
 					<pre><code class="cpp" data-trim>
@@ -1189,8 +1164,8 @@ foo;
 					int main() {
 						int x = 100;
 						x = x---x
-								|x--|
-								x---x;
+						    |x--|
+						    x---x;
 						return x;
 					}
 					</code></pre>
@@ -1243,10 +1218,19 @@ foo;
 						}
 					}
 					</code></pre>
+					<a href="https://godbolt.org/z/BWD4ad"><pre class="fragment"><code class="cpp" data-trim>
+					#include &lt;iostream&gt;
+
+					void foo(int) { std::cout &lt;&lt; "int\n"; }
+					void foo(unsigned) { std::cout &lt;&lt; "unsigned\n"; }
+
+					int main() {
+						foo(uint8_t{3});
+					}
+					</code></pre></a>
 					<ul>
 						<li class="fragment"><a href="https://godbolt.org/z/VPxeS7">Don't do math in signed integers</a></li>
 						<li class="fragment">Don't do math in unsigned integers</li>
-						<li class="fragment">Don't do math in C++</li>
 						<li class="fragment">Don't use C++</li>
 					</ul>
 				</section>
@@ -1263,6 +1247,10 @@ foo;
 				width: 1440,
 				slideNumber: true,
 				loop: true,
+				hash: true,
+				fragmentInURL: true,
+				transition: none,
+				backgroundTransition: none,
 				autoPlayMedia: true,
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
