@@ -53,12 +53,12 @@
 							<li><code>const</code> forces value to be initialized</code>
 						</ul>
 
-						<pre><code class="cpp" data-trim>
-						double const pi = 3.1415926;
+						<pre><code class="cpp" data-trim data-noescape>
+						double <mark>const</mark> pi = 3.1415926;
 
 						double get_area() {
-							double const radius = 1.5;
-							double const area = pi * radius * radius;
+							double <mark>const</mark> radius = 1.5;
+							double <mark>const</mark> area = pi * radius * radius;
 							return area;
 						}
 						</code></pre>
@@ -83,7 +83,7 @@
 						</code></pre>
 					</section>
 					<section>
-						<p><code>const&amp;</code> as a parameter type is complicated</p>
+						<p><code>const&amp;</code> as parameter type is complicated</p>
 						<p class="fragment"><code>const_cast</code> breaks constness</p>
 						<p class="fragment">Without caution, it may introduce a nasty <strong>undefined behavior</strong></p>
 						<p class="fragment"><a href="https://godbolt.org/z/HMmqJf">can be bad for optimization</a></p>
@@ -153,8 +153,9 @@
 						</code></pre>
 					</section>
 					<section>
-						<pre><code class="cpp" data-trim>
-						std::string const&amp; get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
+						<p><code>const&amp;</code> can take temporary object</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						<mark class="fragment">std::string const&amp;</mark> get_default(<mark class="fragment">std::map&lt;std::string, std::string&gt; const&amp;</mark> settings,
 								std::string const&amp; key, std::string const&amp; dflt) {
 							if (auto p = settings.find(key); p != settings.end()) {
 								return p-&gt;second;
@@ -165,8 +166,8 @@
 						<pre class="fragment"><code class="cpp" data-trim>
 						auto&amp; v = get_default(m, k, "127.0.0.1");
 						</code></pre>
-						<pre class="fragment"><code class="cpp" data-trim>
-						std::string get_default(std::map&lt;std::string, std::string&gt; const&amp; settings,
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						<mark>std::string</mark> get_default(<mark>std::map&lt;std::string, std::string&gt; const&amp;</mark> settings,
 								std::string const&amp; key, std::string&amp;&amp; dflt) {
 							if (auto p = settings.find(key); p != settings.end()) {
 								return p-&gt;second;
@@ -186,11 +187,11 @@
 						<li>Use predefined values</li>
 					</ul>
 
-					<pre><code class="cpp" data-trim>
+					<pre><code class="cpp" data-trim data-noescape>
 					#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
 
 					double get_area() {
-						using boost::math::double_constants::pi;
+						<mark>using boost::math::double_constants::pi;</mark>
 						double const radius = 1.5;
 						double const area = pi * radius * radius;
 						return area;
@@ -204,13 +205,13 @@
 							<li>Move the effort to compile time (sometimes)</li>
 						</ul>
 
-						<pre><code class="cpp" data-trim>
+						<pre><code class="cpp" data-trim data-noescape>
 						#include &lt;boost&sol;math&sol;constants&sol;constants.hpp&gt;
 
-						constexpr double get_area() {
+						<mark>constexpr</mark> double get_area() {
 							using boost::math::double_constants::pi;
-							constexpr double const radius = 1.5;
-							constexpr double const area = pi * radius * radius;
+							<mark>constexpr</mark> double const radius = 1.5;
+							<mark>constexpr</mark> double const area = pi * radius * radius;
 							return area;
 						}
 						</code></pre>
@@ -298,7 +299,6 @@
 							return boost::math::double_constants::pi * radius * radius;
 						}
 						</code></pre>
-						<p class="fragment">There is one bug might crush your program</p>
 					</section>
 					<section>
 						<h2>The danger of having good coworkers</h2>
@@ -385,7 +385,7 @@
 							}
 						};
 						</code></pre>
-						<a href="https://godbolt.org/z/tR4XGk">code</a> / <a href="https://godbolt.org/z/TyFhS7">better version></a>
+						<a href="https://godbolt.org/z/tR4XGk">code</a> / <a href="https://godbolt.org/z/TyFhS7">better version</a>
 					</section>
 				</section>
 				<section>
@@ -397,6 +397,7 @@
 						return std::make_shared&lt;S&gt;{};
 					};
 					</code></pre>
+					<a href="https://godbolt.org/z/7rAcdS">code</a>
 					<p class="fragment">Is <code>std::shared_ptr</code> thread safe, why?</p>
 				</section>
 				<section>
@@ -412,6 +413,7 @@
 							return std::make_unique&lt;S&gt;{};
 						};
 						</code></pre>
+						<a href="https://godbolt.org/z/6_h6Tm">code</a>
 						<p class="fragment">Fun fact: <code>std::make_unique</code> was missing in C++11, added in C++14</p>
 						<p class="fragment">...this is mostly an oversight... -- Herb Sutter, 2011</p>
 					</section>
@@ -508,6 +510,8 @@
 						std::vector&lt;int&gt; data = {1, 2, 3, 4};
 						</code></pre>
 
+						<a href="https://godbolt.org/z/Ze4CQd">code</a>
+
 						<p class="fragment">Is list initializer the biggest failure in C++? -- guy on twitter</p>
 					</section>
 					<section>
@@ -577,10 +581,10 @@
 				<section>
 					<h2>Be familiar with STL</h2>
 
-					<pre><code class="cpp" data-trim>
+					<pre><code class="cpp" data-trim data-noescape>
 					#include &lt;map&gt;
 
-					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
+					<mark>std::optional&lt;int&gt;</mark> foo(std::map&lt;int, int&gt; const&amp; m) {
 						for (std::map&lt;int, int&gt;::const_iterator it=m.begin(); it!=m.end(); ++it)
 							if (it-&gt;first &gt; 3 + it-&gt;second)
 								return it-&gt;second;
@@ -593,11 +597,11 @@
 				<section>
 					<h2>(AAA) Almost always <code>auto</code> - Herb Sutter</h2>
 
-					<pre><code class="cpp" data-trim>
+					<pre><code class="cpp" data-trim data-noescape>
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-						for (auto it=m.begin(); it!=m.end(); ++it)
+						for (<mark>auto</mark> it=m.begin(); it!=m.end(); ++it)
 							if (it-&gt;first &gt; 3 + it-&gt;second)
 								return it-&gt;second;
 						return {};
@@ -607,11 +611,11 @@
 				<section>
 					<h2>Range-based for loops</h2>
 
-					<pre><code class="cpp" data-trim>
+					<pre><code class="cpp" data-trim data-noescape>
 					#include &lt;map&gt;
 
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-						for (auto&amp; p : m)
+						for (<mark>auto&amp; p : m</mark>)
 							if (p.first &gt; 3 + p.second)
 								return p.second;
 						return {};
@@ -622,11 +626,11 @@
 					<section>
 						<h2>Structured binding</h2>
 
-						<pre><code class="cpp" data-trim>
+						<pre><code class="cpp" data-trim data-noescape>
 						#include &lt;map&gt;
 
 						std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; const&amp; m) {
-							for (auto&amp; [key, value] : m)
+							for (<mark>auto&amp; [key, value]</mark> : m)
 								if (key &gt; 3 + value)
 									return value;
 							return {};
@@ -664,11 +668,48 @@
 					<section>
 						<p>Believe or not,</p>
 						<p class="fragment">how to declare/initialize a variable,</p>
-						<p class="fragment">how to declare/define signatures of a function,</p>
+						<p class="fragment">how to declare/define the signature of a function,</p>
 						<p class="fragment">how to declare/define a very basic class/struct,</p>
 						<p class="fragment">after all these years, are still very hot topices in C++ community</p>
 					</section>
 					<section>
+						<h2>Coming next...</h2>
+						<dl>
+							<dt class="fragment">Initialization in C++, it is HELL</dt>
+							<dd class="fragment">Depression guaranteed</dd>
+							<dt class="fragment">How to write a function signature</dt>
+							<dd class="fragment">Not that bad</dd>
+							<dt class="fragment">How to write a class?</dt>
+							<dd class="fragment">Who Am I? Why Am I Here? Where Am I Going?</dd>
+						</dl>
+					</section>
+					<section>
+						<dl>
+							<dt class="fragment">How to setup a modern C++ project</dt>
+							<dd>
+								<ul>
+									<li class="fragment">package manager</li>
+									<li class="fragment">CMake</li>
+									<li class="fragment">unit testing</li>
+									<li class="fragment">static checker</li>
+									<li class="fragment">dynamic sanitizer</li>
+									<li class="fragment">fuzzer</li>
+									<li class="fragment">CI</li>
+								</ul>
+							</dd>
+							<dt class="fragment">Go fast or go away</dt>
+							<dd>
+								<ul>
+									<li class="fragment">Why your current project shouldn't use C++</li>
+									<li class="fragment">How to write performant <strike>C++</strike> code</li>
+									<li class="fragment">Why OOP/GoF/Big(O) are lies, kinda</li>
+								</ul>
+							</dd>
+							<dt class="fragment">That's a rotate</dt>
+						</dl>
+					</section>
+					<section>
+						<h2>To Sum Up</h2>
 						<blockquote>
 							<p>C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do, it blows your whole leg off</p>
 							<p>-- Bjarne Stroustrup</p>
@@ -753,10 +794,10 @@
 						auto f = []() {};
 					</code></pre>
 
-					<pre class="fragment"><code class="cpp" data-trim>
+					<pre class="fragment"><code class="cpp" data-trim data-noescape>
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
 						if (auto it=std::find_if(cbegin(m), cend(m),
-								[](std::pair&lt;int, int&gt; const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
+								<mark>[](std::pair&lt;int, int&gt; const&amp; p) { return p.first &gt; 3 + p.second; }</mark>; it!=m.end())
 							return it-&gt;second;
 						return {};
 					}
@@ -765,10 +806,10 @@
 				<section>
 					<h2>Generic <code>lambda</code></h2>
 
-					<pre><code class="cpp" data-trim>
+					<pre><code class="cpp" data-trim data-noescape>
 					std::optional&lt;int&gt; foo(std::map&lt;int, int&gt; m) {
 						if (auto it=std::find_if(cbegin(m), cend(m),
-								[](auto const&amp; p) { return p.first &gt; 3 + p.second; }; it!=m.end())
+								[](<mark>auto const&amp; p</mark>) { return p.first &gt; 3 + p.second; }; it!=m.end())
 							return it-&gt;second;
 						return {};
 					}
@@ -789,15 +830,15 @@
 				</section>
 				<section>
 					<h2>How about <code>std::string</code></h2>
-					<ul>
-						<li><span class="fragment"><a href="http://localhost:10240/z/kim7D1">It allocates</a></span><span class="fragment"> <a href="http://localhost:10240/z/a62eaX">sometimes</a></span></li>
-					</ul>
+					<p><span class="fragment">It allocates </span><span class="fragment">sometimes</span></p>
 
 					<pre><code class="cpp" data-trim>
 					std::string s1 = "hello";
 					std::string s2 = "hello hello hello";
 					std::string s3 = "very looooooooooooooooog string";
 					</code></pre>
+
+					<a href="http://localhost:10240/z/kim7D1">code</a> / <a href="http://localhost:10240/z/a62eaX">code</a>
 				</section>
 				<section>
 					<h2><code>std::string_view</code> comes to rescure</h2>
@@ -1218,7 +1259,9 @@ foo;
 						}
 					}
 					</code></pre>
-					<a href="https://godbolt.org/z/BWD4ad"><pre class="fragment"><code class="cpp" data-trim>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim>
 					#include &lt;iostream&gt;
 
 					void foo(int) { std::cout &lt;&lt; "int\n"; }
@@ -1227,12 +1270,15 @@ foo;
 					int main() {
 						foo(uint8_t{3});
 					}
-					</code></pre></a>
-					<ul>
-						<li class="fragment"><a href="https://godbolt.org/z/VPxeS7">Don't do math in signed integers</a></li>
-						<li class="fragment">Don't do math in unsigned integers</li>
-						<li class="fragment">Don't use C++</li>
-					</ul>
+					</code></pre>
+				</section>
+				<section>
+					<h2>Simple Guidelines</h2>
+					<p class="fragment"><a href="https://godbolt.org/z/VPxeS7">Don't do math in signed integers</a></p>
+					<p class="fragment">Don't do math in unsigned integers</p>
+				</section>
+				<section>
+					<h1>Don't use C++</h1>
 				</section>
 			</div>
 		</div>
@@ -1249,8 +1295,8 @@ foo;
 				loop: true,
 				hash: true,
 				fragmentInURL: true,
-				transition: none,
-				backgroundTransition: none,
+				transition: 'none',
+				backgroundTransition: 'none',
 				autoPlayMedia: true,
 				dependencies: [
 					{ src: 'plugin/markdown/marked.js' },
