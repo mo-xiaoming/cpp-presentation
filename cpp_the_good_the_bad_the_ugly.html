@@ -65,7 +65,6 @@
 						<a href="https://godbolt.org/z/jHLVJJ">code</a>
 
 						<p class="fragment">What does <code>const</code> really mean?</p>
-						<p class="fragment">What's your "intention"?</p>
 						</textarea>
 					</section>
 					<section>
@@ -155,7 +154,7 @@
 					<section>
 						<p><code>const&amp;</code> can take temporary object</p>
 						<pre><code class="cpp" data-trim data-noescape>
-						<mark class="fragment">std::string const&amp;</mark> get_default(<mark class="fragment">std::map&lt;std::string, std::string&gt; const&amp;</mark> settings,
+						<mark>std::string const&amp;</mark> get_default(<mark>std::map&lt;std::string, std::string&gt; const&amp;</mark> settings,
 								std::string const&amp; key, std::string const&amp; dflt) {
 							if (auto p = settings.find(key); p != settings.end()) {
 								return p-&gt;second;
@@ -480,8 +479,6 @@
 						bar(foo());
 						S s = foo();
 						</code></pre>
-
-						<p class="fragment">There is a bug with ALL compilers</p>
 					</section>
 					<section>
 						<p>If you have the necessity to define a destructor...,</p>
@@ -677,7 +674,7 @@
 						<dl>
 							<dt class="fragment">Initialization in C++, it is HELL</dt>
 							<dd class="fragment">Depression guaranteed</dd>
-							<dt class="fragment">How to write a function signature</dt>
+							<dt class="fragment">How to write a function</dt>
 							<dd class="fragment">Not that bad</dd>
 							<dt class="fragment">How to write a class?</dt>
 							<dd class="fragment">Who Am I? Why Am I Here? Where Am I Going?</dd>
@@ -702,7 +699,7 @@
 								<ul>
 									<li class="fragment">Why your current project shouldn't use C++</li>
 									<li class="fragment">How to write performant <strike>C++</strike> code</li>
-									<li class="fragment">Why OOP/GoF/Big(O) are lies, kinda</li>
+									<li class="fragment">Why OOP/GoF/Big(O)... are lies, kinda</li>
 								</ul>
 							</dd>
 							<dt class="fragment">That's a rotate</dt>
