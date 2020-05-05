@@ -1,0 +1,1249 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Initialization of C++, it is HELL!!!</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/atom-one-light.css">
+
+		<style type="text/css">
+			p { text-align: left; }
+		</style>
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Initialization of C++, it is HELL!!!</h1>
+					<blockquote class="fragment">
+						<h3>We get a mess, the mess gets worse, so it's time to switch to a new language.</h3>
+						<footer> -- Nicolai Josuttis</footer>
+					</blockquote>
+				</section>
+				<section>
+					<h2 class="fragment">"Initialization of C++ is bonkers" -- Sy Brand</h2>
+					<img src="./img/init_in_cpp_is_bonders.png"/>
+				</section>
+				<section>
+					<h2>What does it take to be a good C++ programmer?</h2>	
+				</section>
+				<section>
+					<ol>
+						<li><code>()</code></li>
+						<li><code>=</code></li>
+						<li><code>{}</code></li>
+					</ol>
+				</section>
+				<section>
+					<ol>
+						<li>Default initialization</li>
+						<li>Copy initialization</li>
+						<li>Value initialization</li>
+						<li>Aggregate initialization</li>
+						<li>Direct initialization</li>
+						<li>List initialization</li>
+					</ol>
+					<p class="fragment"><mark>Different C++ standard may have different rules</mark></p>
+				</section>
+				<section>
+					<section>
+						<h2>Default initialization</h2>
+						<p>This is the initilization performed when a variable is constructed with no initializer</p>
+						<ol>
+							<li><code>T object;</code></li>
+							<li><code>new T</code>;</li>
+							<li><code>new T(); // until C++03</code></li>
+						</ol>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						int i;
+						<mark class="fragment">int j = i; // UB</mark>
+
+						<span class="fragment">unsigned char i;</span>
+						<span class="fragment">unsigned char j = i; // not undefined</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct S {
+							int i;
+						};
+
+						S s;
+						int j = s.i;<span class="fragment"><mark> // UB</mark></span>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						class C {
+							int i;
+						public:
+							C() {}
+							int getI() { return i; }
+						};
+
+						C c;
+						int j = c.getI();<span class="fragment"><mark> // UB</mark></span>
+						</code></pre>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						const int i; <span class="fragment"><mark>// Error</mark></span>
+
+						struct S {
+							int i;
+						};
+						const S s; <span class="fragment"><mark>// Error</mark></span>
+
+						struct X {
+							X() = default;
+							int i;
+						};
+						const X x; <span class="fragment"><mark>// Error</mark></span>
+
+						struct Y {
+							Y();
+							int i;
+						};
+						Y::Y() = default;
+						const Y y; <span class="fragment"><mark>// OK</mark></span>
+
+						<span class="fragment">// If T is a const-qualified type, it must be a class type with a <mark>user-provided</mark> default ctor</span>
+
+						<span class="fragment">// A constructor is <mark>user-provided</mark> it is <mark>user-declared</mark> and not explicitly defaulted on its first declaration</span>
+						</code></pre>
+					</section>
+					<section>
+						<h2>Default initialization</h2>
+						<ul>
+							<li>Initalization does not initialize anything <strong>by default</strong></li>
+							<ol>
+								<li>built-in types: uninitialized, UB on access</li>
+								<li>class types: default constructor</li>
+							</ol>
+							<li>Using Direct Member Initialization whenever possible<li>
+						</ul>
+						<pre><code class="cpp" data-trim>
+						struct S {
+							int i = 0;
+							W w = {};
+						};
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Copy initialization</h2>
+						<table>
+							<tr>
+								<td>
+									<ol>
+										<li>Initializer starts with <code>=</code></li>
+										<li>Passing arguments by value</li>
+										<li>Returning by value</li>
+										<li>Throwing/Catching expceitons by value</li>
+									</ol>
+								</td>
+								<td>
+									<ol>
+										<li><code>T object = other;</code></li>
+										<li><code>T object = {other}; // until C++11</code></li>
+										<li><code>T array[N] = {other};</code></li>
+										<li><code>f(other)</code></li>
+										<li><code>return other;</code></li>
+										<li><code>throw object;</code></li>
+										<li><code>catch (T object)</code></li>
+									</ol>
+								</td>
+							</tr>
+						</table>
+					</section>
+					<section>	
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						struct S {
+							explicit S(int);
+						};
+						
+						void foo(const S &amp;);
+						
+						S s1(42); <span class="fragment">// Ok</span>
+						S s2{42}; <span class="fragment">// Ok</span>
+						S s3 = 42; <mark class="fragment">// Error</mark>
+						S s4 = {42}; <mark class="fragment">// Error</mark>
+
+						foo(42); <mark class="fragment">// Error</mark>
+
+						struct S {
+							S(std::string);
+						};
+
+						S s1("hello"); <span class="fragment">// OK</span>
+						S s2{"hello"}; <span class="fragment">// OK</span>
+
+						S s3 = "hello" <mark class="fragment">// Error, no conversion from const char [6] to std::string</mark>
+						S s4 = ("hello"); <mark class="fragment">// ditto, only const char * to std::string</mark>
+						S s5 = {"hello"}; <span class="fragment">// OK<span><span class="fragment">, different rule applies</span>
+						</code></pre>
+					</section>
+					<section>
+						<h2>Copy initialization</h2>
+						<ol>
+							<li>Copy initialization is never an assignment</li>
+							<li>If type don't match, copy initialization performs a conversion sequence, but explicit ctors are not participate</li>
+							<li>The implicit conversion must produce T directly from the initializer</li>
+						</ol>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Aggregate initialization</h2>
+						<p>Initializes an aggregate from branced-init-list</p>
+						<ol>
+							<li><code>T object = {arg1, arg2, ...};</code></li>
+							<li><code>T object {arg1, arg2, ...}; // since C++11</code></li>
+						</ol>
+					</section>
+					<section>
+						<ol>
+							<li>An array, or</li>
+							<li>A class (struct/union), that has</li>
+							<table>
+								<tr>
+									<th>C++98</th>
+									<th>C++11/14</th>
+									<th>C++17</th>
+								</tr>
+								<tr>
+									<td>
+										<ul>
+											<li>no user-declared ctors</li>
+											<li>no private or protected non-static data members</li>
+											<li>no base class</li>
+											<li>no virtual functions</li>
+										</ul>
+									</td>
+									<td>
+										<ul>
+											<li>no user-provided ctors</li>
+											<li>no private or protected non-static data memebers</li>
+											<li>no base class</li>
+											<li>no virtual functions</li>
+											<li>no default member initializers</li>
+										</ul>
+									</td>
+									<td>
+										<ul>
+											<li>no user-provided, explicit, or inherited ctors</li>
+											<li>no private or protected non-static data members</li>
+											<li>no virtual, private, or prtected base class</li>
+											<li>no virtual functions</li>
+										</ul>
+									</td>
+								</tr>
+							</table>
+						</ol>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct Data {
+							std::string name;
+							double value;
+						};
+
+						struct DV: Data {	// before C++17, this is a class with default ctor
+							bool used;		// since C++17, this is an aggregate
+							void print() const;
+						};
+
+						DV u;	// value and used are undefined
+						DV v{};	// value and used with 0 and false
+						DV v{{"hello", 3}, true};
+						DV v{"hello", 3, true};
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct S {
+							explicit S(int);
+						};
+
+						struct A {
+							S s1, s2;
+						};
+
+						S s = {3, 4}; <mark class="fragment">// Error</mark>
+						<span class="fragment">// Aggregate initialization <mark>copy initializes</mark> its members</span>
+						<span class="fragment">S s = {S(3), S(4)};</span>
+						</pre></code>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						struct S {
+							explicit S(int);
+							S(double);
+						};
+
+						S s = {3, 4}; <mark class="fragment">// calls S(double)</mark>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						// Aggregate initialzation zero initializes its remaining members
+						struct S {
+							int i, j;
+						};
+
+						S s = {1};         // s.i = 1, s.j = 0
+
+						int a[100] = {};    // all zeros
+
+						struct A {
+							S s;
+							int k;
+						};
+
+						A a = {1, 2}; // A a = {{1, 2}, 0}
+						</pre></code>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct S {
+							S() = delete; <span class="fragment" data-fragment-index="3">// user-declared, but not user-provided, it is an aggregate</span>
+						};
+
+						S s1; <span class="fragment" data-fragment-index="1">// Error</span>
+
+						<span class="fragment" data-fragment-index="5">// WTF of the month -- on Nicolai Josuttis twitter</span>
+						S s2{};	<mark class="fragment" data-fragment-index="2">// Ok</mark><span class="fragment" data-fragment-index="4">, fixed in C++20</span>
+						</code></pre>
+					</section>
+					<section>
+						<p><code class="cpp">std::array</code> is good, but,</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						// Without intializaton elements might have <mark>undefined values</mark>
+						std::array&lt;int, 10&gt; a;      // values are undefined
+						std::array&lt;int, 10&gt; b{};	// values are initialized with 0
+						std::array&lt;int, 10&gt; c{1, 2, 3};	// 1, 2, 3, 0, 0, 0...
+						<span class="fragment">
+						// Nested intializations may need an <mark>additional pair of braces</mark>
+						std::vector&lt;std::complex&lt;double&gt;&gt; x{{1, 2}, {3, 4}};	// fine, it is class, calles the constructor
+						std::array&lt;std::complex&lt;double&gt;, 10&gt; z{{1, 2}, {3, 4}}; // Error
+						std::array&lt;std::complex&lt;double&gt;, 10&gt; z1{{{1, 2}, {3, 4}}}; // all braces are needed</span>
+						<span class="fragment">
+						// Getting worse
+						std::vector&lt;std::complex&lt;double&gt;&gt; x{{1, 2}};	// init the first element
+						std::array&lt;std::complex&lt;double&gt;, 10&gt; y{{1, 2}}; // something different, 1st is (1, 0), the 2nd is (2, 0)</span>
+						</code></pre>
+					</section>
+					<section>
+						<p><code>std::complex</code> is <em>special</em></p>
+						<pre><code class="cpp" data-trim data-noescape>
+						template&lt;typename _Tp&gt; 
+						struct complex
+						{    
+							///  Default constructor.  First parameter is x, second parameter is y.
+							///  Unspecified parameters default to 0.
+							_GLIBCXX_CONSTEXPR complex(const _Tp&amp; __r = _Tp(), const _Tp&amp; __i = _Tp())
+							: _M_real(__r), _M_imag(__i) { }
+						};
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						template&lt;typename _Tp, std::size_t _Nm&gt;
+						struct __array_traits
+						{
+							typedef _Tp _Type[_Nm];
+						};
+
+						template&lt;typename _Tp, std::size_t _Nm&gt;
+						struct array
+						{
+							typedef _GLIBCXX_STD_C::__array_traits&lt;_Tp, _Nm&gt; _AT_Type;
+						};
+						</code></pre>
+					</section>
+					<section>
+						<h2>Aggregate initialization</h2>
+						<ol>
+							<li>Members without initializers undergo <strong>zero initialization</strong>, thus no undefined behavior</li>
+							<li>Better to use additional pair of braces for nested initialization</li>
+						</ol>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Direct initialization</h2>
+						<p>Initializes an object from explicit set of constructor arguments.</p>
+						<ol>
+							<li><code class="cpp">T object(arg1, arg2, ...)</code></li>
+							<li><code class="cpp">T(arg1, arg2, ...)</code></li>
+						</ol>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						std::string s(48, 'a'); <span class="fragment">// "aaaaaaaaa...."</span>
+						std::string s2{48, 'a'}; <span class="fragment">// "0a"</span>
+						</code></pre>
+
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						struct S {};
+
+						struct A {
+						 A(S);
+						};
+
+						A a(S()); <mark class="fragment">// function declaration</mark>
+						</code></pre>
+					</section>
+					<section>
+						<h2>Most vexing parse</h2>
+						<pre><code class="cpp" data-trim data-noescape>
+						<span class="fragment">// v is a function declaration, with</span>
+						<span class="fragment">// - return type std::vector&lt;int&gt;</span>
+						<span class="fragment">// - a first parameter named cin of type istream_iterator</span>
+						<span class="fragment">// - second unamed parameter of type function takes no parameter returns istream_iterator</span>
+						<span class="fragment">// Because in C, void foo(int a) and void foo(int(a)) are the same thing.</span>
+						std::vector&lt;int&gt; v(std::istream_iterator&lt;int&gt;(cin), std::istream_iterator&lt;int&gt;());
+						<span class="fragment">std::vector&lt;int&gt; v((std::istream_iterator&lt;int&gt;(cin)), (std::istream_iterator&lt;int&gt;())); // Ok</span>
+						</code></pre>
+
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						void C::update() {
+							std::unique_lock&lt;std::mutex&gt;(mutex_);
+							<span class="fragment">// this locks nothing, it merely declares a new variable mutex_
+							// which shadows the member variable</span>
+							do_update();
+						}
+						<mark class="fragment">// RAII default constructor can be dangerous</mark>
+						</code></pre>
+					</section>
+					<section>
+						<p>Comparing to copy initialization</p>
+						<ol>
+							<li>For built-in types: no difference</li>
+							<li>For class types:</li>
+							<ul>
+								<li>Can take more than one argument</li>
+								<li>Can take explict constructors</li>
+							</ul>
+						</ol>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct S {
+							explicit S(int) {}
+						};
+
+						S s = 1; <span class="fragment">// Error</span>
+						S s(1); <span class="fragment">// Ok</span>
+
+						struct X {
+							explicit X(int) {}
+							X(double) {}
+						};
+
+						X x1 = 1; <span class="fragment">// call X(double)</span>
+						X x2(2); <span class="fragment">// call X(int)</span>
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Value initialization</h2>
+						<p>This is the initialization performed when a variable is constructed with an empty initializer.</p>
+						<ol>
+							<li>T() // Since C++03</li>
+						</ol>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct S {
+							int i;
+						};
+
+						S getS() {
+							return S(); // value init
+						}
+
+						int j = getS().i; <mark class="fragment">// UB in C++98;</mark><span class="fragment"> Ok since C++03</span>
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						struct S {
+							S() {};	// user-provided ctor
+							int i;
+						};
+
+						S getS() {
+							return S(); // value init
+						}
+
+						int j = getS().i; <mark class="fragment">// UB in all versions</mark>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						struct S {
+							S() = default; // user-declared, but not user-provided
+							int i;
+						};
+
+						S getS() {
+							return S(); // value init
+						}
+
+						int j = getS().i; <span class="fragment">// Ok</span>
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						struct S {
+							S();
+							int i;
+						};
+
+						S::S() = default; // user-provided
+
+						S getS() {
+							return S(); // value init
+						}
+
+						int j = getS().i; <mark class="fragment">// UB</mark>
+						</code></pre>
+					</section>
+					<section>
+						<h2>Value initialization</h2>
+						<ol>
+							<li>If type has a <strong>user-provided</strong> default constructor, it is called</li>
+							<li>Otherwise, you get <strong>zero initialization</strong></li>
+							<li>Be aware of most vexing parse</li>
+						</ol>
+					</section>
+				</section>
+				<section>
+					<section>
+						<p>Current Problems</p>
+						<p>1. Initialization is a mess</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						// Too many different initialization syntaxes
+						int i1;           // unintialized
+						int i2 = 3.7;         // i2 == 3, narrowing
+						int a[] = {1, 2, 3}; // initialization of aggregates
+
+						// Now we have classes
+						int i3(3.7);  // initialized with 3
+						int i4 = int();     // initialized with 0
+
+						X x(S());           // most vexing parse
+
+						std::vector&lt;int&gt; v; // no initializer for containers at all
+						v.push_back(3);
+						v.push_back(4);
+						</code></pre>
+						<p>2. We have no clue how to initialze a user defined type (typedef)</p>
+					</section>
+					<section>
+						<p>So C++ standard commitee decided to introduce one more intialization syntax! It is the list initialization, or the <strong>uniform initialization</strong></p>
+						<ol>
+							<li>One syntax for everything</li>
+							<li>Just does the right thing depending on the type</li>
+							<li>No vexing parse problem</li>
+						</ol>
+					</section>
+					<section>
+						<h2>List initialization</h2>
+						<p>Initializes an object from braced-init-list</p>
+						<ol>
+							<li>Direct-list-initialization <code>S s{arg1, arg2, ...}</code></li>
+							<li>Copy-list-initialization <code>S s = {arg1, arg2, ...}</code></li>
+						</ol>
+					</section>
+					<section>
+						<p>No narrowing conversions</p>
+						<pre><code class="cpp" data-trim data-noescape> 
+						struct S {
+							int i, j;
+						};
+
+						S s = {1.0, 0.0};   // Error, and breaking changes vs C/C++98/03!
+						</code></pre>
+						<p>Passing and returning brace-init-lists is <strong>copy list initialization</strong></p>
+						<pre><code class="cpp" data-trim data-noescape> 
+						S f1() {
+							return {3, 0};  // copy-list-init
+						}
+
+						void f2(S);
+						f2({3, 0}); // copy-list-init
+						</code></pre>
+						<pre><code class="cpp" data-trim data-noescape> 
+						assert(c == std::complex(0,0));
+						assert(c == std::complex{0,0});     // Error
+						assert((c == std::complex{0,0}));   // extra pair of parens make it ok
+						</code></pre>
+					</section>
+					<section>
+						<p>If there's <strong>ANY WAY</strong> for compilers to construct a call using constructor taking a <code>std::initializer_list</code>, compilers will employ that interpretation.</p>
+						<pre><code class="cpp" data-trim data-noescape> 
+						class S {
+						public:
+							S(int i, bool b);
+							S(int i, double d);
+							S(std::initializer_list<long double> il);
+						};
+
+						S s1(10, true); <span class="fragment">// first ctor</span>
+						S s2{10, true}; <span class="fragment">// std::initializer_list ctor (10 and true convert to long double)</span>
+
+						S s3(10, 5.0); <span class="fragment">// second ctor</span>
+						S s4{10, 5.0}; <span class="fragment">// std::initializer_list ctor (10 and 5.0 convert to long double)</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape> 
+						class S {
+						public:
+							S(int i, bool b);
+							S(int i, double d);
+							S(std::initializer_list&lt;long double&gt; il);
+
+							operator float() const; // added
+						};
+
+						S s5(s4); <span class="fragment">// copy ctor</span>
+						S s6{s4}; <span class="fragment">// std::initializer_list ctor (s4 converts to float, and float converts to long double)</span>
+						</code></pre>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape> 
+						class S {
+						public:
+							S(int i, bool b);
+							S(int i, double d);
+							S(std::initializer_list&lt;bool&gt; il);
+						};
+
+						S s{10, 5.0}; <span class="fragment">// Error! 10 and 5.0 is convertible but need narrowing conversion</span>
+						</code></pre>
+					</section>
+					<section>
+						<p>Only if there is <strong>NO WAY</strong> to convert the types to <code>std::initializer_list</code>, then compilers fall back on normal overload resolution.</p>
+						<pre><code class="cpp" data-trim data-noescape> 
+						class S {
+						public:
+							S(int i, bool b);
+							S(int i, double d);
+							S(std::initializer_list&lt;std::string&gt;);
+						};
+
+						S s1(10, true); <span class="fragment">// first ctor</span>
+						S s2{10, true}; <span class="fragment"> // first ctor</span>
+						S s3(10, 5.0); <span class="fragment"> // second ctor</span>
+						S s4{10, 5.0}; <span class="fragment"> // second ctor</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape> 
+						template&lt;typename _Tp, typename _Alloc = std::allocator&lt;_Tp&gt; &gt;
+						class vector : protected _Vector_base&lt;_Tp, _Alloc&gt;
+						{
+							explicit vector(size_type __n, const allocator_type&amp; __a = allocator_type())
+							: _Base(_S_check_init_len(__n, __a), __a) { _M_default_initialize(__n); }
+
+							vector(initializer_list&lt;value_type&gt; __l,
+								const allocator_type&amp; __a = allocator_type()) : _Base(__a) {
+							_M_range_initialize(__l.begin(), __l.end(), random_access_iterator_tag()); }
+						};
+						</code></pre>
+						<pre><code class="cpp" data-trim data-noescape> 
+						template &lt;typename T, size_t N&gt;
+						auto test() {
+							return std::vector&lt;T&gt;{N};
+						}
+
+						int main() {
+							std::cout &lt;&lt; test&lt;std::string, 3&gt;().size(); <span class="fragment">// vector(size_t), prints 3</span>
+							std::cout &lt;&lt; test&lt;int, 3&gt;().size(); <mark class="fragment">// vector(initializer_list), prints 1</mark>
+						}
+						</code></pre>
+					</section>
+					<section>
+						<p>The empty <code>{}</code> has different meanings</p>
+						<pre><code class="cpp" data-trim data-noescape> 
+						struct S {
+							S() = default;
+							int i;
+						};
+
+						int main() {
+							S s{}; <span class="fragment">// aggregate intialization after C++98</span>
+							return s.i; <span class="fragment">// Ok</span>
+						}
+						</code></pre>
+
+						<pre><code class="cpp" data-trim data-noescape> 
+						struct S {
+							S() {}; // user-provided
+							int i;
+						};
+
+						int main() {
+							S s{}; <span class="fragment">// calls default ctor</span>
+							return s.i; <span class="fragment">// UB</span>
+						}
+						</code></pre>
+					</section>
+					<section>
+						<h2>List initialization (1/3)</h2>
+						<ul>
+							<li>No vexing parse</li>
+							<li>For aggregate types<li>
+							<ul>
+								<li>aggregate init</li>
+							</ul>
+							<li>For built-in types</li>
+							<ul>
+								<li><code>{a}</code> is direct init</li>
+								<li><code>={a}</code> is copy-init</li>
+							</ul>
+							<li>For class types</li>
+							<ul>
+								<li>Frist, greedily try to call a ctor that takes a <code>std::initializer_list</code></li>
+								<li>If there is none: direct-init, or copy-init if <code>={a}</code> and <code>a</code> is a single element</li>
+							</ul>
+						</ul>
+					</section>
+					<section>
+						<h2>List initialization (2/3)</h2>
+						<ul>
+							<li>empty braces <code>{}</code> are special</li>
+							<ul>
+								<li>For aggregate types: aggregate init (all elements zeroed)</li>
+								<li>Only call <code>std::initializer_list</code> ctor if there is no default ctor</li>
+								<li>Otherwise: <mark>value intialization</mark></li>
+							</ul>
+							<li>no narrowing conversions</li>
+							<ul>
+								<li>passing &amp; returning brace-init-lists is copy-list-initialization</li>
+							</ul>
+						</ul>
+					</section>
+					<section>
+						<h2>List initialization (3/3)</h2>
+						<ul>
+							<li>Problem</li>
+							<ul>
+								<li>Difficult to see whether <code>std::initializer_list</code> ctor is called</li>
+								<li><code>std::initalizer_list</code> doesn't work with move-only types</li>
+								<li>empty braces are special</li>
+								<li>nested braces are confusing</li>
+								<li>Non-obvious interactions with <code>auto</code></li>
+								<li>Does not work with macros at all</li>
+							</ul>
+						</ul>
+					</section>
+				</section>
+				<section>
+					<section data-markdown>
+						<textarea data-template>
+							## Summery (1/4)
+
+							* Default initialization (no initializer)
+							  - built-in types: uninitialized, UB on access
+							  - class types: default constructor
+							* Copy initialization (`= value`, pass-by-value, return-by-value)
+							  - not possible with `explicit`
+							* Aggregate initialization (`={args}`)
+							  - Elements without initalisers undergo **zero initialization**
+							* Static initialization
+							  - **zero initialization** by default
+							  - **constant initialization** (`= constexpr`)
+						</textarea>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+							## Summery (2/4)
+							* Direct initialization (argument list in parens)
+							  - Problem: most vexing parse
+							* Value initialization (empty parens)
+							  - If type has a *user-provided* default ctor, it is called
+							  - Otherwise, you get **zero initializatioin**
+							  - Problem: most vexing parse
+							* List initialization
+							  - No vexing parse
+							  - For aggregate types
+								* aggregate init
+						</textarea>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+							## Summery (3/4)
+							  - For built-in types
+								* `{a}` is direct init, `={a}` is copy-init
+							  - For class types
+								* Frist, greedily try to call a ctor that takes a `std::initializer_list`
+								* If there is none: direct-init, or copy-init if `={a}` and a is a single element
+							  - empty braces `{}` are special
+								* For aggregate types: aggregate init (all elements zeroed)
+								* Only call `std::initializer_list` ctor if there is no default ctor
+								* Otherwise: **value intialization**
+						</textarea>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+							## Summery (4/4)
+							  - no narrowing conversions
+							  - passing &amp; returning brace-init-lists is copy-list-initialization
+							  - Problem
+								* Difficult to see whether `std::initializer_list` ctor is called
+								* `std::initalizer_list` doesn't work with move-only types
+								* empty braces are special
+								* nested braces are confusing
+								* Non-obvious interactions with `auto`
+								* Does not work with macros at all
+						</textarea>
+					</section>
+					<section>
+						<p>They are all lies...</p>
+						<p class="fragment"><em>Simple</em> value initialization from cppreference.com</p>
+						<blockquote class="fragment">
+						1) if T is a class type with at least one user-provided constructor of any kind, the default constructor is called; (until C++11) 2) if T is a non-union class type without any user-provided constructors, every non-static data member and base-class component of T is value-initialized; (until C++11) Since C++11, value-initializing a class without a user-provided constructor, which has a member of a class type with a user-provided constructor zeroes out the member before calling its constructor
+						</blockquote>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape> 
+						struct A {
+							int i;
+							A() { } // user-provided default ctor, does not initialize i
+						};
+
+						struct B { A a; }; // implicitly-defined default ctor
+
+						std::cout &lt;&lt; B().a.i &lt;&lt; '\n'; // value-initializes a B temporary
+													  // leaves b.a.i uninitialized in C++03
+													  // sets b.a.i to zero in C++11
+						// (note that B{}.a.i leaves b.a.i uninitialized in C++11, but for
+						// a different reason: in post-DR1301 C++11, B{} is aggregate-initialization,
+						// which then value-initializes A, which has a user-provided ctor)
+						
+						// 2) if T is a non-union class type without any user-provided constructors, every 
+						// non-static data member and base-class component of T is value-initialized; (until C++11)
+						//
+						// Since C++11, value-initializing a class without a user-provided constructor, 
+						// which has a member of a class type with a user-provided constructor zeroes out 
+						// the member before calling its constructor
+						</code></pre>
+					</section>
+					<section>
+						<h3>Please refer to C++ standard instead,</h3>
+						<h3 class="fragment">and this is one of the most inpractical advaice in human history.</h3>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Seeking for better code guide</h2>
+						<pre><code class="cpp" data-trim data-noescape>
+						int i01;            <mark class="fragment">// unintialized</mark>
+						int i02 = 3.7;      <mark class="fragment">// int with 3, narrowing</mark>
+						int i03 = 3;        <span class="fragment">// int with 3</span>
+
+						int i04(3);         <span class="fragment">// int with 3</span>
+						int i05{3};         <span class="fragment">// int with 3</span>
+
+						int i06(3.7);       <mark class="fragment">// int with 3, narrowing</mark>
+						int i07{3.7};       <mark class="fragment">// Error, narrowing</mark>
+
+						int i08 = int();    <span class="fragment">// int with 0</span>
+						int i09 = int{};    <span class="fragment">// int with 0</span>
+
+						int i10 = ();       <mark class="fragment">// Error</mark>
+						int i11 = {};       <span class="fragment">// int with 0</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						int i12();          <mark class="fragment">// MOST VEXING PARSE</mark>
+						int i13{};          <span class="fragment">// int with 0</span>
+
+						int i14 = {3};      <span class="fragment">// int with 3</span>
+						int i15 = {3};      <span class="fragment">// int with 3</span>
+
+						int i16 = (3.7);    <mark class="fragment">// int with 3, narrowing</mark>
+						int i17 = {3.7};    <mark class="fragment">// Error, narrowing</mark>
+
+						int i18 = (7, 8);    <mark class="fragment">// int with 8</mark>
+						int i19 = {7, 8};    <mark class="fragment">// Error</mark>
+
+						unsigned int i20 = -17; <mark class="fragment">// signed -&gt; unsigned</mark>
+						unsigned int i21(-17);  <mark class="fragment">// signed -&gt; unsigned</mark>
+						unsigned int i22{-17};  <mark class="fragment">// Error</mark>
+
+						auto i23(3);         <span class="fragment">// int with 3</span>
+						auto i24{3};         <mark class="fragment">// int with 3, sometimes</mark>
+
+						EnumClassType e1(0); <mark class="fragment">// Error</mark>
+						EnumClassType e2{0}; <mark class="fragment">// fine</mark>
+						</code></pre>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						int j = 3;
+						unsigned int i23(j);    <mark class="fragment">// signed -&gt; unsigned</mark>
+						unsigned int i24{j};    <mark class="fragment">// Error</mark>
+
+						int a1[] = {1, 2, 3};   <span class="fragment">// can skip the equal sign</span>
+						int a2[]{1, 2, 3};
+
+						std::vector&lt;int&gt; v1(4, 15); <mark class="fragment">// 4 elements of 15</mark>
+						std::vector&lt;int&gt; v2{4, 15}; <span class="fragment">// [4, 15], more intuitive</span>
+
+						std::vector&lt;int&gt; v3(istream_iterator&lt;int&gt;(cin), istream_iterator&lt;int&gt;());   <mark class="fragment">// MOST VEXING PARSE</mark>
+						std::vector&lt;int&gt; v4{istream_iterator&lt;int&gt;(cin), istream_iterator&lt;int&gt;()};   <span class="fragment">// safe</span>
+
+						A a(S());   <mark class="fragment">// MOST VEXING PARSE</mark>
+						A a{S()};   <span class="fragment">// safe</span>
+						</code></pre>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+						Depends on your point of view on narrowing, it seems that `{}` gives the most sane answers
+						- checking narrowing
+						- no vexing pass
+						- always intepreted as initialized by elements
+						- works for scoped enums
+						</textarea>
+					</section>
+					<section>
+						<p>Just when you think <code>{}</code> is better, it comes to bite you,</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						std::set&lt;std::string&gt; s;
+						std::vector v6{s.cbegin(), s.cend()}; <mark class="fragment">// std::vector&lt;std::set&lt;std::string&gt;::iterator&gt;</mark>
+						<span class="fragment">std::vector v7(s.cebgin(), s.cend()); // std::vector&lt;std::string&gt;</span>
+						</code></pre>
+
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						template&lt;typename _InputIterator,
+						typename _ValT = typename iterator_traits&lt;_InputIterator&gt;::value_type&gt;
+						vector(_InputIterator, _InputIterator) -&gt; vector&lt;_ValT, _Allocator&gt;;
+						</code></pre>
+					</section>
+					<section>
+						<p>Just when you think <code>()</code> might be your new favirate, here it comes,</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						std::vector v8("hi", "aloha"); <mark class="fragment">// std::vector&lt;const char&gt; with everything between "hi" and "aloha", core dump at the best</mark>
+						std::vector v9{"hi", "aloha"}; <span class="fragment">// sd::vector with 2 elements</span>
+						</code></pre>
+						<ul>
+							<li><code>()</code> for ordinary constructors only</li>
+							<li><code>{}</code> for all constructors</li>
+							<ul>
+								<li><code>std::initialzier_list</code> has higher priority</li>
+								<li>Default constructor has the highest priority, if a simple <code>{}</code> is used</li>
+							</ul>
+						</ul>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						struct S {
+							S(int=0);
+							S(std::initializer_list&lt;int&gt;);
+						};
+						void foo(const S &amp;);
+
+						foo(42);        <span class="fragment">// default ctor</span>
+						foo({});        <span class="fragment">// default ctor</span>
+						foo({42});      <span class="fragment">// std::initializer_list</span>
+						foo({42, 34});  <span class="fragment">// std::initializer_list</span>
+						foo(S{42, 34});	<span class="fragment">// std::initializer_list</span>
+
+						S s0;           <span class="fragment">// default ctor</span>
+						S s1(3);        <span class="fragment">// default ctor</span>
+						S s2{};         <span class="fragment">// default ctor</span>
+						S s3 = 10;      <span class="fragment">// default ctor</span>
+						S s4 = {};      <span class="fragment">// default ctor</span>
+						S s5 = {42};    <span class="fragment">// std::initializer_list</span>
+						S s6({42});     <span class="fragment">// std::initializer_list</span>
+						S s7{{42}};     <span class="fragment">// std::initializer_list</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						struct S {
+							S(int=0);
+							<mark>explicit</mark> S(std::initializer_list&lt;int&gt;);
+						};
+						void foo(const S &amp;);
+
+						foo(42);        <span class="fragment">// default ctor</span>
+						foo({});        <span class="fragment">// default ctor</span>
+						foo({42});      <span class="fragment">// Error, explicit std::initializer_list</span>
+						foo({42, 34});  <span class="fragment">// Error, cannot convert std::initializer_list to 'const S'</span>
+						foo(S{42, 34});	<span class="fragment">// std::initializer_list</span>
+
+						S s0;           <span class="fragment">// default ctor</span>
+						S s1(3);        <span class="fragment">// default ctor</span>
+						S s2{};         <span class="fragment">// default ctor</span>
+						S s3 = 10;      <span class="fragment">// default ctor</span>
+						S s4 = {};      <span class="fragment">// default ctor</span>
+						S s5 = {42};    <span class="fragment">// Error, explicit std::initializer_list</span>
+						S s6({42});     <span class="fragment">// std::initializer_list</span>
+						S s7{{42}};     <span class="fragment">// std::initializer_list</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						struct S {
+							<mark>explicit</mark> S(int=0);
+							S(std::initializer_list&lt;int&gt;);
+						};
+						void foo(const S &amp;);
+
+						foo(42);        <span class="fragment">// Error, cannot convert int to S</span>
+						foo({});        <span class="fragment">// Error, explicit default ctor</span>
+						foo({42});      <span class="fragment">// std::initializer_list</span>
+						foo({42, 34});  <span class="fragment">// std::initializer_list</span>
+						foo(S{42, 34});	<span class="fragment">// std::initializer_list</span>
+
+						S s0;           <span class="fragment">// default ctor</span>
+						S s1(3);        <span class="fragment">// default ctor</span>
+						S s2{};         <span class="fragment">// default ctor</span>
+						S s3 = 10;      <span class="fragment">// Error, cannot convert int to S</span>
+						S s4 = {};      <span class="fragment">// Error, explicit default ctor</span>
+						S s5 = {42};    <span class="fragment">// std::initializer_list</span>
+						S s6({42});     <span class="fragment">// std::initializer_list</span>
+						S s7{{42}};     <span class="fragment">// std::initializer_list</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						struct S {
+							<mark>explicit</mark> S(int=0);
+							<mark>explicit</mark> S(std::initializer_list&lt;int&gt;);
+						};
+						void foo(const S &amp;);
+
+						foo(42);        <span class="fragment">// Error, no matching function for call to foo</span>
+						foo({});        <span class="fragment">// Error, no matching function for call to foo</span>
+						foo({42});      <span class="fragment">// Error, no matching function for call to foo</span>
+						foo({42, 34});  <span class="fragment">// Error, no matching function for call to foo</span>
+						foo(S{42, 34});	<span class="fragment">// std::initializer_list</span>
+
+						S s0;           <span class="fragment">// default ctor</span>
+						S s1(3);        <span class="fragment">// default ctor</span>
+						S s2{};         <span class="fragment">// default ctor</span>
+						S s3 = 10;      <span class="fragment">// Error, cannot convert int to S</span>
+						S s4 = {};      <span class="fragment">// Error, explicit default ctor</span>
+						S s5 = {42};    <span class="fragment">// Error, explicit std::initializer_list</span>
+						</code></pre>
+					</section>
+					<section>
+						<p>For some time, below cannot compile, because most(all?) containers had <code>explicit</code> default ctors
+						<pre><code class="cpp" data-trim data-noescape>
+						// http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2193
+						std::vector&lt;int&gt; v = {};
+						</code></pre>
+					</section>
+					<section>
+						<p>The only way to initialize an enum class by integer is by using <code>direct list initialization</code></p>
+						<pre><code class="cpp" data-trim data-noescape>
+						enum class E {mr, mrs};
+
+						E e1 = 0;   // error
+						E e2 = {42};// error
+						E e3(42);   // error
+						E e4{42};   // ok since C++17
+						</code></pre>
+					</section>
+					<section>
+						<p>List initialization has its own share of madness</p>
+						<pre><code class="cpp" data-trim data-noescape>
+						<span class="fragment">// core dump at the best, std::vector uses std::intializer_list ctor,
+						// then pass {"1", "2"} to std::string, std::string again uses
+						// std::initializer_list&lt;char&gt;, which consider "1" and "2" as iterator
+						// type of const char *, which consiquencely tries to put all memory between
+						// "1" and "2" into std::string</span>
+						std::vector&lt;std::string&gt; v{{"1", "2"}};
+						</code></pre>
+						<pre><code class="cpp" data-trim data-noescape>
+						char c{'a'};
+						char c2{c + 1}; <span class="fragment">// Error, narrowing</span>
+						</code></pre>
+					</section>
+					<section>
+						<p>Now we have <code>auto</code>, it provides numbers of benefits,</p>
+						<ul>
+							<li>always give you the right type, <code>auto i = v.begin()</code></li>
+							<li>increate maintainability, change from <code>auto i = f() * 42</code> to <code>auto i = f() * 42.0</code></li>
+							<li>no implicit conversion, guarantees better performance by default</li>
+							<li>using deduction is your only good option, lambdas, binders...</li>
+							<li>less typing</li>
+						</ul>
+
+					</section>
+					<section>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
+						int i = 42;
+						auto i = 42;
+
+						long v = 42;
+						auto v = 42l;
+
+						Customer c{"Jim", 77};
+						auto c = Customer{"Jim", 77};
+
+						std::vector<int>::const_iterator it = v.begin();
+						auto it = v.cbegin();
+
+						std::string s = "hello";
+						// must with using namespace std::string_literals, but using namespace is a bad
+						auto s = "hello"s; 
+
+						long long ll = getInt();
+						auto ll = long long{getInt()};  // Error
+						auto ll = uint64_t{getInt()};   // not exactly the same thing
+						</code></pre>
+					</section>
+					<section>
+						<p>However,</p>
+						<blockquote class="fragment">
+						...not C++, there is no simple solutions for any problems, NEVER! -- Nocolai Josuttis
+						</blockquote>
+						<pre><code class="cpp" data-trim data-noescape>
+						auto i11 = 42;      <span class="fragment">// int with 42</span>
+						auto i12{42};       <span class="fragment">// std::initializer_list&lt;int&gt; in C++11 with some compilers; int in C++14</span>
+						<span class="fragment">// One of those craziest decisions we ever did in c++, .... An = in initialization might change the type,
+						// are we totally crazy and screwed up? -- Nicolai Josuttis</span>
+						auto i13 = {42};    <span class="fragment">// std::initializer_list&lt;int&gt;,</span>
+						auto i14 = int{42}; <span class="fragment">// int with 42</span>
+
+						<span class="fragment">// Again, std::intialization_list sucks, big time</span>
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						// Just like passing argument by value in C, auto decays
+						const C&amp; c = f();
+						auto c = static_cast&lt;const C&amp;&gt;(f());	// c not a reference
+						auto &amp;c = static_cast&lt;const C&amp;&gt;(f());	// ok
+						auto &amp;&amp;c = static_cast&lt;const C&amp;&gt;(f());	// ok
+
+						int i = 42;
+						const int &amp;r = i;   // r is const int&amp;
+						auto v = r;         // v is int, different from i
+
+						const int arr[4] = {1, 2, 3, 4};
+						auto a = arr;       // a has the type of const int *
+
+						auto s = "hi";      // s has the type of const char *, "hi" has the type of const char[3]
+						</code></pre>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+						Nocolai Josuttis made a joke on his talk, he said we should use AAAA (Always `auto` Ampersand Ampersand) instead of Herb Sutter's AAA (Almost Always `auto`), like
+
+						```cpp
+						auto &&i = foo();
+						auto &&j = i;
+						```
+
+						`auto &&` can take anything!!!
+
+						Someone asked him one hour after the talk, "Why this is a joke, this is a good idea".
+
+						"That's one problem we have in C++, any idea that seems to simplify the madness and nightmare C++, seems to be a good idea", said by Nicolai Josettis
+
+						Herb Sutter mentioned one of the pitfalls of AAAA is you lost `const`/`volatile` information visually, and we are bad at memorize things.
+						</textarea>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+						## Guides? Don't have any
+
+						Nicolai Josuttis,
+						- use `T{arg}` style, until you cannot
+
+						Herb Sutter,
+						- `auto var = init` to make type track, deduce
+						- `auto var = type{init}` or `type var{init}` to make type stick, commit
+						</textarea>
+					</section>
+					<section data-markdown>
+						<textarea data-template>
+						Timur Doumler,
+						- Use `= value` for simple value types like `int` etc
+						- Use `= {args}` and `= {}` for :
+						  * aggregate-init
+						  * std::initializer_list
+						  * direct member initalizers (can't use `(args)` there)
+						- Use `{args}` and `{}` for passing & returning temporaries
+						- Use `(args)` to call constructors and always `auto` to eliminate vexing parse, except in direct member initializer (DMIs) because auto is not allowed there
+						</textarea>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>The Future</h2>
+						<p>Clearly, the C++ commitee realized this problem, so they decide to do something to solve it,</p>
+						<p class="fragment">By introducing new ways of initialization</p>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						struct S { int i, j, k; };
+						S s{.i=3, .k=9};
+						</code></pre>
+
+						<p class="fragment">In C++20, <code>()</code> and <code>{}</code> will do the same thing, except,
+						<ul class="fragment">
+							<li><code>()</code> does not call <code>std::initializer_list</code> ctors</li>
+							<li><code>{}</code> does not allow narrowing conversions</li>
+						</ul>
+						<p class="fragment">Meanwhile, keep the backward capability</p>
+						<p class="fragment">What could possibly go wrong?</p>
+					</section>
+					<section>
+						<img src="./img/cpp20_new_init.png"/>
+					</section>
+				</section>
+				<section>
+					<p>Don't get me start with assignment operator...</p>
+
+					<pre><code class="cpp" data-trim data-noescape>
+					std::string s;
+					s = 50;
+					std::cout &lt;&lt; s;	<mark class="fragment">// 2</mark>
+					</code></pre>
+					<img src="./img/cpp_suprise.png" class="fragment"/>
+				</section>
+			</div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			Reveal.initialize({
+				zoomKey: "ctrl",
+				width: 1440,
+				slideNumber: true,
+				loop: true,
+				hash: true,
+				fragmentInURL: true,
+				transition: 'none',
+				backgroundTransition: 'none',
+				autoPlayMedia: true,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
