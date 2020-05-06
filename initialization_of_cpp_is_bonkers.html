@@ -127,7 +127,7 @@
 
 						<span class="fragment">// If T is a const-qualified type, it must be a class type with a <mark>user-provided</mark> default ctor</span>
 
-						<span class="fragment">// A constructor is <mark>user-provided</mark> it is <mark>user-declared</mark> and not explicitly defaulted on its first declaration</span>
+						<span class="fragment">// A constructor is <mark>user-provided</mark> if it is <mark>user-declared</mark> and not explicitly defaulted on its first declaration</span>
 						</code></pre>
 					</section>
 					<section>
@@ -138,7 +138,7 @@
 								<li>built-in types: uninitialized, UB on access</li>
 								<li>class types: default constructor</li>
 							</ol>
-							<li>Using Direct Member Initialization whenever possible<li>
+							<li>Using Direct Member Initialization whenever possible</li>
 						</ul>
 						<pre><code class="cpp" data-trim>
 						struct S {
@@ -1082,7 +1082,7 @@
 						<p>Now we have <code>auto</code>, it provides numbers of benefits,</p>
 						<ul>
 							<li>always give you the right type, <code>auto i = v.begin()</code></li>
-							<li>increate maintainability, change from <code>auto i = f() * 42</code> to <code>auto i = f() * 42.0</code></li>
+							<li>increase maintainability, change from <code>auto i = f() * 42</code> to <code>auto i = f() * 42.0</code></li>
 							<li>no implicit conversion, guarantees better performance by default</li>
 							<li>using deduction is your only good option, lambdas, binders...</li>
 							<li>less typing</li>
@@ -1159,7 +1159,7 @@
 
 						Someone asked him one hour after the talk, "Why this is a joke, this is a good idea".
 
-						"That's one problem we have in C++, any idea that seems to simplify the madness and nightmare C++, seems to be a good idea", said by Nicolai Josettis
+						"That's one problem we have in C++, any idea that seems to simplify the madness and nightmare of C++, seems to be a good idea", said by Nicolai Josettis
 
 						Herb Sutter mentioned one of the pitfalls of AAAA is you lost `const`/`volatile` information visually, and we are bad at memorize things.
 						</textarea>
@@ -1228,7 +1228,6 @@
 
 		<script>
 			Reveal.initialize({
-				zoomKey: "ctrl",
 				width: 1440,
 				slideNumber: true,
 				loop: true,
@@ -1241,6 +1240,7 @@
 					{ src: 'plugin/markdown/marked.js' },
 					{ src: 'plugin/markdown/markdown.js' },
 					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
 					{ src: 'plugin/highlight/highlight.js', async: true }
 				]
 			});
