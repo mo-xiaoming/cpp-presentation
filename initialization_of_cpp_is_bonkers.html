@@ -1038,7 +1038,7 @@
 						</code></pre>
 					</section>
 					<section>
-						<p>For some time, below cannot compile, because most(all?) containers had <code>explicit</code> default ctors
+						<p>Most(all?) std containers had <code>explicit</code> default ctors
 						<pre><code class="cpp" data-trim data-noescape>
 						// http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2193
 						std::vector&lt;int&gt; v = {};
@@ -1079,7 +1079,7 @@
 							<li>using deduction is your only good option, lambdas, binders...</li>
 							<li>less typing</li>
 						</ul>
-
+						<small><a href="https://godbolt.org/z/4GJCCD">code</a></small>
 					</section>
 					<section>
 						<pre class="stretch"><code class="cpp" data-trim data-noescape>
