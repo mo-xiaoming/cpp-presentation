@@ -37,11 +37,8 @@
 					</blockquote>
 				</section>
 				<section>
-					<h2 class="fragment">"Initialization of C++ is bonkers" -- Sy Brand</h2>
+					<p class="fragment">"Initialization of C++ is bonkers" -- Sy Brand</p>
 					<img src="./img/init_in_cpp_is_bonders.png"/>
-				</section>
-				<section>
-					<h2>What does it take to be a good C++ programmer?</h2>	
 				</section>
 				<section>
 					<ol>
@@ -375,6 +372,7 @@
 						struct array
 						{
 							typedef _GLIBCXX_STD_C::__array_traits&lt;_Tp, _Nm&gt; _AT_Type;
+							typename _AT_Type::_Type _M_elems;
 						};
 						</code></pre>
 					</section>
@@ -813,13 +811,6 @@
 						</textarea>
 					</section>
 					<section>
-						<p>They are all lies...</p>
-						<p class="fragment"><em>Simple</em> value initialization from cppreference.com</p>
-						<blockquote class="fragment">
-						1) if T is a class type with at least one user-provided constructor of any kind, the default constructor is called; (until C++11) 2) if T is a non-union class type without any user-provided constructors, every non-static data member and base-class component of T is value-initialized; (until C++11) Since C++11, value-initializing a class without a user-provided constructor, which has a member of a class type with a user-provided constructor zeroes out the member before calling its constructor
-						</blockquote>
-					</section>
-					<section>
 						<pre class="stretch"><code class="cpp" data-trim data-noescape> 
 						struct A {
 							int i;
@@ -834,13 +825,14 @@
 						// (note that B{}.a.i leaves b.a.i uninitialized in C++11, but for
 						// a different reason: in post-DR1301 C++11, B{} is aggregate-initialization,
 						// which then value-initializes A, which has a user-provided ctor)
-						
+						<span class="fragment">
+						// 1) if T is a class type with at least one user-provided constructor of any kind, the default constructor is called; (until C++11)
 						// 2) if T is a non-union class type without any user-provided constructors, every 
 						// non-static data member and base-class component of T is value-initialized; (until C++11)
 						//
 						// Since C++11, value-initializing a class without a user-provided constructor, 
 						// which has a member of a class type with a user-provided constructor zeroes out 
-						// the member before calling its constructor
+						// the member before calling its constructor</span>
 						</code></pre>
 					</section>
 					<section>
