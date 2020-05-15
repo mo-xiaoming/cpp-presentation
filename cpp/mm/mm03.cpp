@@ -12,7 +12,7 @@
 using namespace std::chrono_literals;
 
 void tf1() {
-  auto a = new int[100];
+  auto a = new int[4 * 1024];
   std::this_thread::sleep_for(3s);
   delete[] a;
 }

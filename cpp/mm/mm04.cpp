@@ -12,14 +12,10 @@
 using namespace std::chrono_literals;
 
 void tf1() {
-  std::array<int *, 1 << 10> a;
+  std::array<int *, 1024 * 128> a;
   std::generate(begin(a), end(a), [] { return new int[1 << 10]; });
-  std::for_each(begin(a), end(a) - 1, [](auto &p) {
-    delete[] p;
-    p = nullptr;
-  });
-  std::this_thread::sleep_for(3s);
-  delete[] a.back();
+  auto b = new int{3};
+  std::for_each(begin(a), end(a), [](auto p) { delete[] p; });
 }
 
 int main() {
@@ -32,10 +28,11 @@ int main() {
 
   std::array<std::thread, 4> a;
   std::generate(begin(a), end(a), [] { return std::thread(tf1); });
+  std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
 
-  std::cout << "#### thread destroyed\n";
-  std::this_thread::sleep_for(1s);
+  std::cout << "#### all threads finished\n";
   ::malloc_stats();
 
-  std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
+  std::cout << "wait for exit\n";
+  std::cin.get();
 }

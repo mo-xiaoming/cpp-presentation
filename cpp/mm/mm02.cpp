@@ -21,7 +21,8 @@ int main() {
   ::malloc_stats();
   std::cin.get();
 
-  std::cout << "#### after free 1023 * 1024 ints\n";
-  std::for_each(begin(a), end(a) - 1, [](auto p) { delete[] p; });
+  auto b = new int[1 << 10];
+
+  std::for_each(begin(a), end(a), [](auto p) { delete[] p; });
   ::malloc_stats();
 }
