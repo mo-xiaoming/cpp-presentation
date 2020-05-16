@@ -14,7 +14,8 @@
 		<link rel="stylesheet" href="lib/css/atom-one-light.css">
 
 		<style type="text/css">
-			p { text-align: left; }
+			.left { text-align: left; }
+			.right { text-align: right; }
 		</style>
 
 		<!-- Printing and PDF exports -->
@@ -31,14 +32,13 @@
 			<div class="slides">
 				<section>
 					<h1>Initialization of C++, it is HELL!!!</h1>
-					<blockquote class="fragment">
-						<h3>We get a mess, the mess gets worse, so it's time to switch to a new language.</h3>
-						<footer> -- Nicolai Josuttis</footer>
-					</blockquote>
+					<div class="fragment">
+						<h3 class="left">We get a mess, the mess gets worse, so it's time to switch to a new language.</h3>
+						<h3 class="right"> -- Nicolai Josuttis</footer>
+					</div>
 				</section>
 				<section>
-					<p class="fragment">"Initialization of C++ is bonkers" -- Sy Brand</p>
-					<img src="./img/init_in_cpp_is_bonders.png"/>
+					<img class="stretch" src="./img/init_in_cpp_is_bonders.png"/>
 				</section>
 				<section>
 					<ol>
@@ -195,7 +195,6 @@
 						S s2{"hello"}; <span class="fragment">// OK</span>
 
 						S s3 = "hello" <mark class="fragment">// Error, no conversion from const char [6] to std::string</mark>
-						S s4 = ("hello"); <mark class="fragment">// ditto, only const char * to std::string</mark>
 						S s5 = {"hello"}; <span class="fragment">// OK<span><span class="fragment">, different rule applies</span>
 						</code></pre>
 					</section>
@@ -221,7 +220,7 @@
 						<ol>
 							<li>An array, or</li>
 							<li>A class (struct/union), that has</li>
-							<table>
+							<table class="fragment">
 								<tr>
 									<th>C++98</th>
 									<th>C++11/14</th>
@@ -249,13 +248,32 @@
 										<ul>
 											<li>no user-provided, explicit, or inherited ctors</li>
 											<li>no private or protected non-static data members</li>
-											<li>no virtual, private, or prtected base class</li>
+											<li>no virtual, private, or protected base class</li>
 											<li>no virtual functions</li>
 										</ul>
 									</td>
 								</tr>
 							</table>
 						</ol>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						// Aggregate initialzation zero initializes its remaining members
+						int a[100] = {};    // all zeros
+
+						struct S {
+							int i, j;
+						};
+
+						S s = {1};         // s.i = 1, s.j = 0
+
+						struct A {
+							S s;
+							int k;
+						};
+
+						A a = {1, 2}; // A a = {{1, 2}, 0}
+						</pre></code>
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
@@ -297,25 +315,6 @@
 
 						S s = {3, 4}; <mark class="fragment">// calls S(double)</mark>
 						</code></pre>
-					</section>
-					<section>
-						<pre><code class="cpp" data-trim data-noescape>
-						// Aggregate initialzation zero initializes its remaining members
-						struct S {
-							int i, j;
-						};
-
-						S s = {1};         // s.i = 1, s.j = 0
-
-						int a[100] = {};    // all zeros
-
-						struct A {
-							S s;
-							int k;
-						};
-
-						A a = {1, 2}; // A a = {{1, 2}, 0}
-						</pre></code>
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
@@ -361,7 +360,7 @@
 						</code></pre>
 					</section>
 					<section>
-						<pre><code class="cpp" data-trim data-noescape>
+						<pre class="stretch"><code class="cpp" data-trim data-noescape>
 						template&lt;typename _Tp, std::size_t _Nm&gt;
 						struct __array_traits
 						{
@@ -374,6 +373,15 @@
 							typedef _GLIBCXX_STD_C::__array_traits&lt;_Tp, _Nm&gt; _AT_Type;
 							typename _AT_Type::_Type _M_elems;
 						};
+
+						#if __cpp_deduction_guides &gt;= 201606
+						template&lt;typename _Tp, typename... _Up&gt;
+							array(_Tp, _Up...) -&gt;
+								array&lt;enable_if_t&lt;(is_same_v&lt;_Tp, _Up&gt; &amp;&amp; ...), _Tp&gt;,
+									1 + sizeof...(_Up)&gt;;
+						#endif
+
+						// std::array a {1, 2, 3};
 						</code></pre>
 					</section>
 					<section>
@@ -391,6 +399,7 @@
 						<ol>
 							<li><code class="cpp">T object(arg1, arg2, ...)</code></li>
 							<li><code class="cpp">T(arg1, arg2, ...)</code></li>
+							<li><code class="cpp">NonClassT{arg1} // since C++11</code></li>
 						</ol>
 					</section>
 					<section>
@@ -503,9 +512,10 @@
 							return S(); // value init
 						}
 
-						int j = getS().i; <span class="fragment">// Ok</span>
+						int j = getS().i; <span class="fragment" data-fragment-index="1">// Ok</span>
+						<span class="fragment" data-fragment-index="4">const S s; <mark class="fragment" data-fragment-index="5">// Error</mark></span>
 						</code></pre>
-						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						<pre class="fragment" data-fragment-index="2"><code class="cpp" data-trim data-noescape>
 						struct S {
 							S();
 							int i;
@@ -517,7 +527,8 @@
 							return S(); // value init
 						}
 
-						int j = getS().i; <mark class="fragment">// UB</mark>
+						int j = getS().i; <mark class="fragment" data-fragment-index="3">// UB</mark>
+						<span class="fragment" data-fragment-index="6">const S s; <span class="fragment" data-fragment-index="7">// Ok</span></span>
 						</code></pre>
 					</section>
 					<section>
@@ -576,8 +587,8 @@
 
 						S s = {1.0, 0.0};   // Error, and breaking changes vs C/C++98/03!
 						</code></pre>
-						<p>Passing and returning brace-init-lists is <strong>copy list initialization</strong></p>
-						<pre><code class="cpp" data-trim data-noescape> 
+						<pre class="fragment"><code class="cpp" data-trim data-noescape> 
+						// Passing and returning brace-init-lists is copy list initialization
 						S f1() {
 							return {3, 0};  // copy-list-init
 						}
@@ -585,10 +596,10 @@
 						void f2(S);
 						f2({3, 0}); // copy-list-init
 						</code></pre>
-						<pre><code class="cpp" data-trim data-noescape> 
+						<pre class="fragment"><code class="cpp" data-trim data-noescape> 
 						assert(c == std::complex(0,0));
-						assert(c == std::complex{0,0});     // Error
-						assert((c == std::complex{0,0}));   // extra pair of parens make it ok
+						assert(c == std::complex{0,0});     <mark class="fragment">// Error</mark>
+						<span class="fragment">assert((c == std::complex{0,0}));   // extra pair of parens make it ok</span>
 						</code></pre>
 					</section>
 					<section>
@@ -696,7 +707,7 @@
 
 						int main() {
 							S s{}; <span class="fragment">// calls default ctor</span>
-							return s.i; <span class="fragment">// UB</span>
+							return s.i; <mark class="fragment">// UB</mark>
 						}
 						</code></pre>
 					</section>
@@ -704,7 +715,7 @@
 						<h2>List initialization (1/3)</h2>
 						<ul>
 							<li>No vexing parse</li>
-							<li>For aggregate types<li>
+							<li>For aggregate types</li>
 							<ul>
 								<li>aggregate init</li>
 							</ul>
@@ -749,6 +760,9 @@
 							</ul>
 						</ul>
 					</section>
+					<section>
+						<img class="stretch" src="./img/init_list_sucks.png"/>
+					</section>
 				</section>
 				<section>
 					<section data-markdown>
@@ -762,16 +776,14 @@
 							  - not possible with `explicit`
 							* Aggregate initialization (`={args}`)
 							  - Elements without initalisers undergo **zero initialization**
-							* Static initialization
-							  - **zero initialization** by default
-							  - **constant initialization** (`= constexpr`)
+							* Direct initialization (argument list in parens)
+							  - Problem: most vexing parse
 						</textarea>
 					</section>
 					<section data-markdown>
 						<textarea data-template>
 							## Summery (2/4)
-							* Direct initialization (argument list in parens)
-							  - Problem: most vexing parse
+
 							* Value initialization (empty parens)
 							  - If type has a *user-provided* default ctor, it is called
 							  - Otherwise, you get **zero initializatioin**
@@ -785,6 +797,8 @@
 					<section data-markdown>
 						<textarea data-template>
 							## Summery (3/4)
+
+							* List initialization (continues)
 							  - For built-in types
 								* `{a}` is direct init, `={a}` is copy-init
 							  - For class types
@@ -826,7 +840,8 @@
 						// a different reason: in post-DR1301 C++11, B{} is aggregate-initialization,
 						// which then value-initializes A, which has a user-provided ctor)
 						<span class="fragment">
-						// 1) if T is a class type with at least one user-provided constructor of any kind, the default constructor is called; (until C++11)
+						// 1) if T is a class type with at least one user-provided constructor of any kind, the default constructor is called;
+						// (until C++11)
 						// 2) if T is a non-union class type without any user-provided constructors, every 
 						// non-static data member and base-class component of T is value-initialized; (until C++11)
 						//
@@ -929,9 +944,10 @@
 						</code></pre>
 					</section>
 					<section>
-						<p>Just when you think <code>()</code> might be your new favirate, here it comes,</p>
+						<p>Just when you think <code>()</code> might be your new favorate, here it comes,</p>
 						<pre><code class="cpp" data-trim data-noescape>
-						std::vector v8("hi", "aloha"); <mark class="fragment">// std::vector&lt;const char&gt; with everything between "hi" and "aloha", core dump at the best</mark>
+						std::vector v8("hi", "aloha"); <mark class="fragment">// std::vector&lt;const char&gt; with everything between "hi" and "aloha",
+						                               // core dump at the best</mark>
 						std::vector v9{"hi", "aloha"}; <span class="fragment">// sd::vector with 2 elements</span>
 						</code></pre>
 						<ul>
@@ -1038,7 +1054,7 @@
 						</code></pre>
 					</section>
 					<section>
-						<p>Most(all?) std containers had <code>explicit</code> default ctors
+						<p>Most(all?) std containers use to have <code>explicit</code> default ctors
 						<pre><code class="cpp" data-trim data-noescape>
 						// http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2193
 						std::vector&lt;int&gt; v = {};
@@ -1069,7 +1085,12 @@
 						char c{'a'};
 						char c2{c + 1}; <span class="fragment">// Error, narrowing</span>
 						</code></pre>
-						<img class="fragment" href="./img/fuck_conv.png"/>
+					</section>
+					<section>
+						<img class="stretch" src="./img/int_promo.png"/>
+					</section>
+					<section>
+						<img class="stretch" src="./img/fuck_conv.png"/>
 					</section>
 					<section>
 						<p>Now we have <code>auto</code>, it provides numbers of benefits,</p>
@@ -1107,9 +1128,8 @@
 					</section>
 					<section>
 						<p>However,</p>
-						<blockquote class="fragment">
-						...not C++, there is no simple solutions for any problems, NEVER! -- Nocolai Josuttis
-						</blockquote>
+						<p>"...not C++, there is no simple solutions for any problems, NEVER!!!"</p>
+						<p class="right">-- Nocolai Josuttis</p>
 						<pre><code class="cpp" data-trim data-noescape>
 						auto i11 = 42;      <span class="fragment">// int with 42</span>
 						auto i12{42};       <span class="fragment">// std::initializer_list&lt;int&gt; in C++11 with some compilers; int in C++14</span>
@@ -1200,7 +1220,7 @@
 						<p class="fragment">What could possibly go wrong?</p>
 					</section>
 					<section>
-						<img src="./img/cpp20_new_init.png"/>
+						<img class="stretch" src="./img/cpp20_new_init.png"/>
 					</section>
 				</section>
 				<section>
@@ -1211,8 +1231,9 @@
 					s = 50;
 					std::cout &lt;&lt; s;	<mark class="fragment">// 2</mark>
 					</code></pre>
-					<img src="./img/cpp_suprise.png" class="fragment"/>
-					<img src="./img/cpp_suprise2.png" class="fragment"/>
+				</section>
+				<section>
+					<img class="stretch" src="./img/cpp_suprise.png" class="fragment"/>
 				</section>
 			</div>
 		</div>
