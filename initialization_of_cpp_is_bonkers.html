@@ -1157,6 +1157,12 @@
 						auto a = arr;       // a has the type of const int *
 
 						auto s = "hi";      // s has the type of const char *, "hi" has the type of const char[3]
+
+						int* const cptr = &val;
+						auto d{cptr}; // int*, top level constness is lost
+
+						int const* ptr = &val;
+						auto c{ptr}; // int const*
 						</code></pre>
 					</section>
 					<section data-markdown>
