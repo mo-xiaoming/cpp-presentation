@@ -11,6 +11,8 @@ int main() {
   static int ll;
   static int ll_init = 3;
 
+  static int ll_init0 = 0;
+
   std::cout << std::hex;
   std::cout << "\tmain()   " << (uint64_t)main << '\n';
   std::cout << "### end of .text " << (uint64_t)&etext << '\n';
@@ -25,5 +27,6 @@ int main() {
   std::cout << "\tel       " << (uint64_t)&el << '\n';
   std::cout << "\til       " << (uint64_t)&il << '\n';
   std::cout << "\tll       " << (uint64_t)&ll << '\n';
+  std::cout << "\tll_init0 " << (uint64_t)&ll_init0 << '\n';
   std::cout << "### end of .bss  " << (uint64_t)&end << '\n';
 }
