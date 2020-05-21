@@ -563,6 +563,20 @@
 						<p>2. We have no clue how to initialze a user defined type (typedef)</p>
 					</section>
 					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						v.emplace_back("hello"s, 3);
+						<span class="fragment">// std::allocator_traits::construct</span>
+						<span class="fragment">// allocator.construct(p, std::forward<Args>(args)...)</span>
+						<span class="fragment">// ::new (static_cast<void*>(p)) T(std::forward<Args>(args)...) (until C++20)</span>
+						</code></pre>
+
+						<pre><code class="cpp" data-trim data-noescape>
+						template&lt; class T, class... Args &gt;
+						shared_ptr<T> make_shared( Args&amp;&amp;... args );
+						<span class="fragment">// ::new (pv) T(std::forward<Args>(args)...)</span>
+						</code></pre>
+					</section>
+					<section>
 						<p>So C++ standard commitee decided to introduce one more intialization syntax! It is the list initialization, or the <strong>uniform initialization</strong></p>
 						<ol>
 							<li>One syntax for everything</li>
@@ -1101,7 +1115,7 @@
 							<li>using deduction is your only good option, lambdas, binders...</li>
 							<li>less typing</li>
 						</ul>
-						<small><a href="https://godbolt.org/z/-g5ExU">code</a></small>
+						<small><a href="https://godbolt.org/z/oYg1W5">code</a></small>
 					</section>
 					<section>
 						<pre class="stretch"><code class="cpp" data-trim data-noescape>
