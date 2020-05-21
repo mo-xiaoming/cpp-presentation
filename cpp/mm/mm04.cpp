@@ -13,8 +13,8 @@ using namespace std::chrono_literals;
 
 void tf1() {
   std::array<int *, 1024 * 128> a;
-  std::generate(begin(a), end(a), [] { return new int[1 << 10]; });
-  auto b = new int{3};
+  std::generate(begin(a), end(a), [] { return new int[1024]; });
+  auto b = new int[1024];
   std::for_each(begin(a), end(a), [](auto p) { delete[] p; });
 }
 
