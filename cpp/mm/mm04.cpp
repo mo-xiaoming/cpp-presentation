@@ -28,11 +28,12 @@ int main() {
 
   std::array<std::thread, 4> a;
   std::generate(begin(a), end(a), [] { return std::thread(tf1); });
-  std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
 
+  std::this_thread::sleep_for(3s);
   std::cout << "#### all threads finished\n";
   ::malloc_stats();
 
+  std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
   std::cout << "wait for exit\n";
   std::cin.get();
 }
