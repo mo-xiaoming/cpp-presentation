@@ -26,14 +26,17 @@ int main() {
   ::malloc_stats();
   std::cin.get();
 
-  std::array<std::thread, 4> a;
-  std::generate(begin(a), end(a), [] { return std::thread(tf1); });
-
-  std::this_thread::sleep_for(3s);
-  std::cout << "#### all threads finished\n";
+  {
+    std::array<std::thread, 4> a;
+    std::generate(begin(a), end(a), [] { return std::thread(tf1); });
+    std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
+  }
+  std::cout << "#### all threads destroyed\n";
   ::malloc_stats();
+  std::cin.get();
 
-  std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
-  std::cout << "wait for exit\n";
+  std::cout << "#### malloc trim\n";
+  ::malloc_trim(0);
+  ::malloc_stats();
   std::cin.get();
 }
