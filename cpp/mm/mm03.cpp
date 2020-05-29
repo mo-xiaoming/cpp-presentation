@@ -26,7 +26,7 @@ int main() {
   std::cin.get();
 
   {
-    std::array<std::thread, 16> a;
+    std::array<std::thread, 15> a;
     std::generate(begin(a), end(a), [] { return std::thread(tf1); });
     std::for_each(begin(a), end(a), [](auto &t) { t.join(); });
   }
