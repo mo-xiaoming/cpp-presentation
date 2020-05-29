@@ -32,10 +32,8 @@
 			<div class="slides">
 				<section>
 					<h1>Initialization of C++, it is HELL!!!</h1>
-					<div class="fragment">
-						<h3 class="left">We get a mess, the mess gets worse, so it's time to switch to a new language.</h3>
-						<h3 class="right"> -- Nicolai Josuttis</footer>
-					</div>
+					<h3 class="left">We get a mess, the mess gets worse, so it's time to switch to a new language.</h3>
+					<h3 class="right"> -- Nicolai Josuttis</footer>
 				</section>
 				<section>
 					<img class="stretch" src="./img/init_in_cpp_is_bonders.png"/>
@@ -295,6 +293,7 @@
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
+						// Will this compile?
 						struct S {
 							explicit S(int);
 						};
@@ -478,6 +477,8 @@
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
+						// Value initialization zero initializes all members,
+						// if there is no user-provided default ctor
 						struct S {
 							int i;
 						};
