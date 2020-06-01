@@ -31,27 +31,198 @@
 		<div class="reveal">
 			<div class="slides">
 				<section>
-					<h1>Function of C++ (1/2+)</h1>
+					<h1>C++ Functions (1/2+)</h1>
+					<h2>How to pass argument(s)</h2>
 				</section>
 				<section>
-					<table class="stretch">
-						<tr>
-							<td><code>foo(Widget)</code></td>
-							<td><code>foo(Widget *)</code></td>
-							<td><code>foo(Widget const*)</code></td>
-						</tr>
-						<tr>
-							<td><code>foo(Widget const)</code></td>
-							<td><code>foo(Widget* const)</code></td>
-							<td><code>foo(Widget const* const)</code></td>
-						</tr>
-						<tr>
-							<td><code>foo(Widget const)</code></td>
-							<td><code>foo(Widget&amp; const)</code></td>
-							<td><code>foo(Widget const&amp; const)</code></td>
-						</tr>
-						</tr>
-					</table>
+					<p class="fragment">That's it!</p>
+					<ul>
+						<li><code>foo(Widget)</code></li>
+						<li><code>foo(Widget&amp;)</code></li>
+						<li><code>foo(Widget*)</code></li>
+					</ul>
+					<p class="fragment">Let's dig deeper</p>
+				</section>
+				<section>
+					<section>
+						<p>Passing by value</p>
+						<ul>
+							<li>Built-in types</li>
+							<li>Small objects</li>
+							<li>When copying is mandatory</li>
+						</ul>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						void foo(T const&amp; t) {
+							;;;
+							auto c = t;
+							;;;
+						}
+
+						void foo(T t);
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						// .hpp
+						void foo(T);
+
+						// .cpp
+						void foo(T const);
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						void bar(S);
+
+						S foo();
+						bar(foo()); // copy elision, zero cost
+
+						S s;
+						bar(s);     // copy, can be expensive
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h2>Value Category</h2>
+					</section>
+				</section>
+				<section>
+					<section>
+						<ul>
+							<li>Something should not or can not be copied</li>
+							<li>Has to be a pointer/reference in container or being passed as a parameter</li>
+						</ul>
+						<p>Move semantics solves these and <strong>may</strong> provide a performance boost</p>
+						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						struct S { int a[1000]; }; // no owned resources
+
+						struct S { std::string s; }; // with SSO, the performance is no better than copy
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<p>Passing by reference</p>
+						<ul>
+							<li>When copying/moving is expensive</li>
+							<li>When parameter is required</li>
+						</ul>
+						<pre><code class="cpp" data-trim data-noescape>
+						void foo(S&amp;);
+						void bar(S const&amp;);
+
+						auto p = std::smart_pointer&lt;S&gt;();
+						foo(*p);
+						bar(*p);
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<p>Passing by non-owning pointer</p>
+						<ul>
+							<li>When copying/moving is expensive</li>
+							<li>When parameter is optional</li>
+						</ul>
+						<pre><code class="cpp" data-trim data-noescape>
+						void foo(S*);
+						void bar(S const*);
+
+						auto p = std::smart_pointer&lt;S&gt;();
+						foo(p.get());
+						bar(p.get());
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						void foo(S*);
+						void foo(std::optional<S>);
+						</code></pre>
+						<pre clas="fragment"><code class="cpp" data-trim data-noescape>
+						auto p = std::optional&lt;S*&gt;(nullptr);
+						if(! p)	         // flase, p has a value
+						if(p == nullptr) // true, the value is nullptr
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<p>passing by <code>std::unique_ptr</code></p>
+					<ul>
+					</ul>
+					<pre><code class="cpp" data-trim data-noescape>
+					std::unique_ptr&lt;S&gt; bar();
+					std::unique_ptr&lt;S&gt; s;
+
+					void foo(std::unique_ptr&lt;S&gt;); // sink
+					foo(std::move(s));
+					foo(bar());
+
+					void foo(std::unique_ptr&lt;S&gt;&amp;&amp;); // sink
+					foo(std::move(s));
+					foo(bar());
+					</code></pre>
+					<pre><code class="cpp" data-trim data-noescape>
+					void foo(std::unique_ptr&lt;S&gt;&amp;); // might reseat
+					void foo(std::unique_ptr&lt;S&gt; const&amp;); // why?
+					</code></pre>
+				</section>
+				<section>
+					<p>passing by <code>std::shared_ptr</code></p>
+					<ul>
+						<li>C++ is not Java, don't use <code>std::shared_ptr</code> by default</li>
+						<li>Using <code>std::make_shared</code> by default</li>
+					</ul>
+					<pre><code class="cpp" data-trim data-noescape>
+
+					</code></pre>
+				</section>
+				<section>
+					<ul>
+						<li>It is read-only view</li>
+						<li>Doesn't alter lifetime of the data</li>
+						<li>Cheap to copy</li>
+					</ul>
+				</section>
+				<section>
+					<p>Aliasing</p>
+				</section>
+				<section>
+					<section>
+						<ul>
+							<li>By default, return by value</li>
+							<li>RVO has zero cost</li>
+						</ul>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						S foo() { S s; return s; }
+
+						S foo(S s) { return s; }
+
+						S foo(S x, S y) { return test ? std::move(x) : std::move(y); }
+
+						S foo(S x, S y) { if (test) return x; else return y; }
+						</code></pre>
+					</section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						S foo() { S s; return std::move(s); }
+
+						S foo() { S &amp;s = make_S(); return s; }
+
+						S foo(S&amp; s) { return s; }
+
+						S foo(S x, S y) { return test ? x : y; }
+						</code></pre>
+					</section>
+				</section>
+				<section>
+					<section>
+						<pre><code class="cpp" data-trim data-noescape>
+						std::unique_ptr&lt;S&gt; foo();
+						</code></pre>
+					</section>
 				</section>
 			</div>
 		</div>
