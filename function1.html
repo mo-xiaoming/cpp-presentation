@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Initialization of C++, it is HELL!!!</title>
+		<title>C++ Function (1/2+)</title>
 
 		<link rel="stylesheet" href="css/reset.css">
 		<link rel="stylesheet" href="css/reveal.css">
@@ -33,9 +33,33 @@
 				<section>
 					<h1>C++ Functions (1/2+)</h1>
 					<h2>How to pass argument(s)</h2>
+					<p>What's the function gonna to do</p>
 				</section>
 				<section>
-					<p class="fragment">That's it!</p>
+					<p>What's the upper limit</p>
+					<ul>
+						<!-- it does this and that, split it -->
+						<!-- comment blocks, split it -->
+						<li>Single Responsiblity Principle</li>
+					</ul>
+					<pre class="fragment"><code class="cpp" data-trim data-noescape>
+					void foo() {
+						// comment
+						;;;
+
+						// comment
+						;;;
+
+						// comment
+						;;;
+
+						// comment
+						;;;
+					}
+					</code></pre>
+				</section>
+				<section>
+					<p>That's it!</p>
 					<ul>
 						<li><code>foo(Widget)</code></li>
 						<li><code>foo(Widget&amp;)</code></li>
@@ -44,14 +68,22 @@
 					<p class="fragment">Let's dig deeper</p>
 				</section>
 				<section>
+					<p>snapshot: <code>T</code></p>
+					<p>observe: <code>T const*</code>(optional)/<code>T const&amp;</code></p>
+					<p>modify: <code>T*</code>(optional)/<code>T&amp;</code></p>
+					<p>sink: <code>T&amp;&amp;</code>/<code>std::unique_ptr&lt;T&gt;</code><code>std::unique_ptr&lt;T const&gt;</code></p>
+					<p>share ownership: <code>std::shared_ptr&lt;T const&gt;</code></p>
+					<p>optionally transfer ownership: <code>std::shared_ptr&lt;T&gt; const&amp;</code><code>std::shared_ptr&lt;T const&gt; const&amp;</code></p>
+				</section>
+				<section>
 					<section>
 						<p>Passing by value</p>
 						<ul>
 							<li>Built-in types</li>
-							<li>Small objects</li>
+							<li>Small to medium objects, always benchmark</li>
 							<li>When copying is mandatory</li>
 						</ul>
-						<pre class="fragment"><code class="cpp" data-trim data-noescape>
+						<pre><code class="cpp" data-trim data-noescape>
 						void foo(T const&amp; t) {
 							;;;
 							auto c = t;
@@ -60,6 +92,7 @@
 
 						void foo(T t);
 						</code></pre>
+						<a href="https://godbolt.org/z/RD4VoS">const</a>
 					</section>
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
@@ -109,8 +142,8 @@
 							<li>When parameter is required</li>
 						</ul>
 						<pre><code class="cpp" data-trim data-noescape>
-						void foo(S&amp;);
-						void bar(S const&amp;);
+						void may_modify(S&amp;);
+						void observe(S const&amp;);
 
 						auto p = std::smart_pointer&lt;S&gt;();
 						foo(*p);
@@ -124,6 +157,7 @@
 						<ul>
 							<li>When copying/moving is expensive</li>
 							<li>When parameter is optional</li>
+							<li>Should never be an output parameter</li>
 						</ul>
 						<pre><code class="cpp" data-trim data-noescape>
 						void foo(S*);
@@ -137,7 +171,7 @@
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
 						void foo(S*);
-						void foo(std::optional<S>);
+						void foo(std::optional<S>); // by value and optional, kinda immutable
 						</code></pre>
 						<pre clas="fragment"><code class="cpp" data-trim data-noescape>
 						auto p = std::optional&lt;S*&gt;(nullptr);
@@ -148,33 +182,68 @@
 				</section>
 				<section>
 					<p>passing by <code>std::unique_ptr</code></p>
-					<ul>
-					</ul>
 					<pre><code class="cpp" data-trim data-noescape>
 					std::unique_ptr&lt;S&gt; bar();
 					std::unique_ptr&lt;S&gt; s;
 
-					void foo(std::unique_ptr&lt;S&gt;); // sink
+					void sink(std::unique_ptr&lt;S&gt;); // herb sutter
 					foo(std::move(s));
 					foo(bar());
 
-					void foo(std::unique_ptr&lt;S&gt;&amp;&amp;); // sink
+					void sink(std::unique_ptr&lt;S&gt;&amp;&amp;); // scott meyers
 					foo(std::move(s));
 					foo(bar());
 					</code></pre>
 					<pre><code class="cpp" data-trim data-noescape>
-					void foo(std::unique_ptr&lt;S&gt;&amp;); // might reseat
+					void may_reset(std::unique_ptr&lt;S&gt;&amp;);
 					void foo(std::unique_ptr&lt;S&gt; const&amp;); // why?
 					</code></pre>
 				</section>
 				<section>
 					<p>passing by <code>std::shared_ptr</code></p>
+					<p>smart pointers pass by reference is a reset</p>
 					<ul>
-						<li>C++ is not Java, don't use <code>std::shared_ptr</code> by default</li>
-						<li>Using <code>std::make_shared</code> by default</li>
+						<li><code>std::shared_ptr</code> shouldn't be your default choice</li>
+						<li><code>std::make_shared</code> is better than <code>std::shared_ptr, normally</ptr></li>
 					</ul>
 					<pre><code class="cpp" data-trim data-noescape>
+					void foo(std::shared_ptr&lt;S&gt;); // something down the line may take ownership
+					void foo(std::shared_ptr&lt;S&gt; const&amp; s) { // better
+						start_thread(s);
+					}
+					// unique_ptr const &amp; doesn't make sense
 
+					// multi threading
+					void thread_fun(std::shared_ptr&lt;S&gt;); // ?
+
+					void thread_fun(std::shared_ptr&lt;S const&gt;); // OK
+					</code></pre>
+					<pre><code class="cpp" data-trim data-noescape>
+					std::shared_ptr&lt;S&gt; foo() { return std::make_shared&lt;S&gt;(); }
+
+					std::unique_ptr&lt;S&gt; foo();
+					auto p = std::shared_ptr&lt;S&gt;(foo()); // cannot do with make_shared
+					</code></pre>
+
+					<pre><code class="cpp" data-trim data-noescape>
+					void share(std::shared_ptr&lt;S&gt;);
+					void may_reset(std::shared_ptr&lt;S&gt;&amp;);
+					void may_share(std::shared_ptr&lt;S&gt; const&amp;);
+					</code></pre>
+
+					<p>Don't pass smart pointers by value/reference unless you want to manipulate it's ownership</p>
+
+					<p>Herb Sutter's favorite 10-liner</p>
+					<pre><code class="cpp" data-trim data-noescape>
+					shared_ptr<widget> get_widget(int id) {
+						static map&lt;int, weak_ptr&lt;widget&gt;&gt; cache;
+						static mutex m;
+
+						lock_guard<mutex> hold(m);
+						auto sp = cache[id].lock();
+						if (!sp) cache[id] = sp = load_widget(id);
+						return sp;
+					}
 					</code></pre>
 				</section>
 				<section>
@@ -185,7 +254,21 @@
 					</ul>
 				</section>
 				<section>
+					<p>How about <code>&amp;&amp;</code></p>
+					<a href="https://godbolt.org/z/NKHcs6">performance</a>
+				</section>
+				<section>
 					<p>Aliasing</p>
+					<a href="https://godbolt.org/z/_8iLFA">code</a>
+					<p class="fragment">That's why most xxx_cast you see is undefined behavior</p>
+					<!-- static_cast UB in radius -->
+				</section>
+				<section>
+					<ul>
+						<li>pass by value when you can, pass by const ref when you must</li>
+						<li>use raw pointer for optional, unique_ptr/shared_ptr for lifetime</li>
+						<li>don't share with * or &amp;, express via shared_ptr</li>
+					</ul>
 				</section>
 				<section>
 					<section>
