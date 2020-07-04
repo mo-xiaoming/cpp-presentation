@@ -1,4 +1,16 @@
 ```cpp
+#include <string>
+#include <iostream>
+
+int main() {
+    auto s = std::string();
+    std::move(s) = "hello";
+    std::cout << s;
+    //&std::move(s); // error: taking address of rvalue
+}
+```
+
+```cpp
 #include <cstdio>
 
 int initA() {
