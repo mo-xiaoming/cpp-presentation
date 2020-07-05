@@ -152,14 +152,29 @@ auto gp = std::make_shared<T>();
 
 void foo(T*);
 
-void bar(std::shared_ptr<T> &p) {
+void bar(std::shared_ptr<T>& p) {
 	foo(p.get());
 }
 
 bar(gp);
 ```
 
+```cpp
+void bar1(std::shared_ptr<T> p) {
+	foo(p.get());
+}
+
+void bar2(std::shared_ptr<T>& p) {
+	auto c = p;
+	foo(c.get());
+}
+
+// more cumbersome to std::unique_ptr
+```
+
 ## Herb Sutter's favorite 10-liner
+
+`std::weak_ptr<T>` means temporary shared ownership
 
 ```cpp
 std::shared_ptr<widget> get_widget(int id) {
