@@ -69,12 +69,41 @@ void bar() {
 
 ## How to pass argument(s)
 
-- `foo(T)` for small(~20ish bytes?) objects what won't change
-- `foo(T&)` and `foo(T const&)` for larger objects
+- `foo(T)` for small(~20ish bytes?) objects what won't ![p1](https://godbolt.org/z/RD4VoS)
+- `foo(T&)` and `foo(T const&)` for larger objects, or uncopyable
 - `foo(T*)` and `foo(T const*)` for ==optional== larger objects, std::optional<T>?
 - `foo(T&&)` for optimization
 
 That's it!
+
+## dig deeper
+
+```cpp
+// .hpp
+void foo(T);
+
+// .cpp
+void foo(T const);
+```
+
+```cpp
+void bar(S);
+
+S foo();
+bar(foo()); // copy elision, zero cost
+
+S s;
+bar(s);     // copy, can be expensive
+```
+
+```cpp
+void foo(S*);
+void foo(std::optional<S>); // by value and optional, kinda immutable
+
+auto p = std::optional<S*>(nullptr);
+if(! p)	         // flase, p has a value
+if(p == nullptr) // true, the value is nullptr
+```
 
 ## How about smart pointers
 
@@ -134,14 +163,15 @@ auto p = std::make_shared<T>();
 foo(p);
 ```
 
-| #          |                                              |
-|------------|----------------------------------------------|
-| snapshot   | `T`                                          |
-| modify     | `T*`, `T&`                                   |
-| sink       | `std::unique_ptr<T>`, `std::unique_ptr<T>&&` |
-| reseat     | `std::unique_ptr<T>&`, `std::shared_ptr<T>&` |
-| keep alive | `std::shared_ptr<T>`                         |
-| bonus      | `T&&`                                        |
+| #           |                                             |
+|-------------|---------------------------------------------|
+| snapshot    | `T`                                         |
+| modify      | `T*`, `T&`                                  |
+| observe     | `T const*`, `T const&`                      |
+| sink        | `std::unique_ptr<T>` `std::unique_ptr<T>&&` |
+| may reseat  | `std::unique_ptr<T>&` `std::shared_ptr<T>&` |
+| keep alive  | `std::shared_ptr<T>`                        |
+| performance | `T&&`                                       |
 
 `std::smart_ptr<T>&` can be dangerous
 
@@ -153,6 +183,8 @@ auto gp = std::make_shared<T>();
 void foo(T*);
 
 void bar(std::shared_ptr<T>& p) {
+	// some code
+
 	foo(p.get());
 }
 
@@ -188,173 +220,21 @@ std::shared_ptr<widget> get_widget(int id) {
 }
 ```
 
+Move semantics solves these and *may* provide a performance boost
 
-				<section>
-					<section>
-						<p>Passing by value</p>
-						<ul>
-							<li>Built-in types</li>
-							<li>Small to medium objects, always benchmark</li>
-							<li>When copying is mandatory</li>
-						</ul>
-						<pre><code class="cpp" data-trim data-noescape>
-						void foo(T const&amp; t) {
-							;;;
-							auto c = t;
-							;;;
-						}
+```cpp
+struct S { int a[1000]; }; // no owned resources
 
-						void foo(T t);
-						</code></pre>
-						<a href="https://godbolt.org/z/RD4VoS">const</a>
-					</section>
-					<section>
-						<pre><code class="cpp" data-trim data-noescape>
-						// .hpp
-						void foo(T);
+struct S { std::string s; }; // with SSO, the performance is no better than copy
+```
 
-						// .cpp
-						void foo(T const);
-						</code></pre>
-					</section>
-					<section>
-						<pre><code class="cpp" data-trim data-noescape>
-						void bar(S);
+## High order functions
 
-						S foo();
-						bar(foo()); // copy elision, zero cost
+![nvi](https://godbolt.org/z/XY8b8z)
 
-						S s;
-						bar(s);     // copy, can be expensive
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<h2>Value Category</h2>
-					</section>
-				</section>
-				<section>
-					<section>
-						<ul>
-							<li>Something should not or can not be copied</li>
-							<li>Has to be a pointer/reference in container or being passed as a parameter</li>
-						</ul>
-						<p>Move semantics solves these and <strong>may</strong> provide a performance boost</p>
-						<pre class="fragment"><code class="cpp" data-trim data-noescape>
-						struct S { int a[1000]; }; // no owned resources
+![init version](https://godbolt.org/z/MZH3sS)
+![done version](https://godbolt.org/z/6veSNr)
 
-						struct S { std::string s; }; // with SSO, the performance is no better than copy
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<p>Passing by reference</p>
-						<ul>
-							<li>When copying/moving is expensive</li>
-							<li>When parameter is required</li>
-						</ul>
-						<pre><code class="cpp" data-trim data-noescape>
-						void may_modify(S&amp;);
-						void observe(S const&amp;);
-
-						auto p = std::smart_pointer&lt;S&gt;();
-						foo(*p);
-						bar(*p);
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<section>
-						<p>Passing by non-owning pointer</p>
-						<ul>
-							<li>When copying/moving is expensive</li>
-							<li>When parameter is optional</li>
-							<li>Should never be an output parameter</li>
-						</ul>
-						<pre><code class="cpp" data-trim data-noescape>
-						void foo(S*);
-						void bar(S const*);
-
-						auto p = std::smart_pointer&lt;S&gt;();
-						foo(p.get());
-						bar(p.get());
-						</code></pre>
-					</section>
-					<section>
-						<pre><code class="cpp" data-trim data-noescape>
-						void foo(S*);
-						void foo(std::optional<S>); // by value and optional, kinda immutable
-						</code></pre>
-						<pre clas="fragment"><code class="cpp" data-trim data-noescape>
-						auto p = std::optional&lt;S*&gt;(nullptr);
-						if(! p)	         // flase, p has a value
-						if(p == nullptr) // true, the value is nullptr
-						</code></pre>
-					</section>
-				</section>
-				<section>
-					<p>passing by <code>std::unique_ptr</code></p>
-					<pre><code class="cpp" data-trim data-noescape>
-					std::unique_ptr&lt;S&gt; bar();
-					std::unique_ptr&lt;S&gt; s;
-
-					void sink(std::unique_ptr&lt;S&gt;); // herb sutter
-					foo(std::move(s));
-					foo(bar());
-
-					void sink(std::unique_ptr&lt;S&gt;&amp;&amp;); // scott meyers
-					foo(std::move(s));
-					foo(bar());
-					</code></pre>
-					<pre><code class="cpp" data-trim data-noescape>
-					void may_reset(std::unique_ptr&lt;S&gt;&amp;);
-					void foo(std::unique_ptr&lt;S&gt; const&amp;); // why?
-					</code></pre>
-				</section>
-				<section>
-					<p>passing by <code>std::shared_ptr</code></p>
-					<p>smart pointers pass by reference is a reset</p>
-					<ul>
-						<li><code>std::shared_ptr</code> shouldn't be your default choice</li>
-						<li><code>std::make_shared</code> is better than <code>std::shared_ptr, normally</ptr></li>
-					</ul>
-					<pre><code class="cpp" data-trim data-noescape>
-					void foo(std::shared_ptr&lt;S&gt;); // something down the line may take ownership
-					void foo(std::shared_ptr&lt;S&gt; const&amp; s) { // better
-						start_thread(s);
-					}
-					// unique_ptr const &amp; doesn't make sense
-
-					// multi threading
-					void thread_fun(std::shared_ptr&lt;S&gt;); // ?
-
-					void thread_fun(std::shared_ptr&lt;S const&gt;); // OK
-					</code></pre>
-					<pre><code class="cpp" data-trim data-noescape>
-					std::shared_ptr&lt;S&gt; foo() { return std::make_shared&lt;S&gt;(); }
-
-					std::unique_ptr&lt;S&gt; foo();
-					auto p = std::shared_ptr&lt;S&gt;(foo()); // cannot do with make_shared
-					</code></pre>
-
-					<pre><code class="cpp" data-trim data-noescape>
-					void share(std::shared_ptr&lt;S&gt;);
-					void may_reset(std::shared_ptr&lt;S&gt;&amp;);
-					void may_share(std::shared_ptr&lt;S&gt; const&amp;);
-					</code></pre>
-
-					<p>Don't pass smart pointers by value/reference unless you want to manipulate it's ownership</p>
-
-				</section>
-				<section>
-					<ul>
-						<li>It is read-only view</li>
-						<li>Doesn't alter lifetime of the data</li>
-						<li>Cheap to copy</li>
-					</ul>
-				</section>
 				<section>
 					<p>How about <code>&amp;&amp;</code></p>
 					<a href="https://godbolt.org/z/NKHcs6">performance</a>
