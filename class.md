@@ -235,30 +235,16 @@ struct S { std::string s; }; // with SSO, the performance is no better than copy
 ![init version](https://godbolt.org/z/MZH3sS)
 ![done version](https://godbolt.org/z/6veSNr)
 
-				<section>
-					<p>How about <code>&amp;&amp;</code></p>
-					<a href="https://godbolt.org/z/NKHcs6">performance</a>
-				</section>
-				<section>
-					<p>Aliasing</p>
-					<a href="https://godbolt.org/z/_8iLFA">code</a>
-					<p class="fragment">That's why most xxx_cast you see is undefined behavior</p>
-					<!-- static_cast UB in radius -->
-				</section>
-				<section>
-					<ul>
-						<li>pass by value when you can, pass by const ref when you must</li>
-						<li>use raw pointer for optional, unique_ptr/shared_ptr for lifetime</li>
-						<li>don't share with * or &amp;, express via shared_ptr</li>
-					</ul>
-				</section>
-				<section>
-					<section>
-						<ul>
-							<li>By default, return by value</li>
-							<li>RVO has zero cost</li>
-						</ul>
-					</section>
+## Aliasing
+
+![code](https://godbolt.org/z/16Tcv6)
+
+That's why most xxx_cast you see is undefined behavior
+
+- pass by value when you can, pass by const ref when you must</li>
+- use raw pointer for optional, unique_ptr/shared_ptr for lifetime</li>
+- don't share with \* or &, express via shared_ptr</li>
+
 					<section>
 						<pre><code class="cpp" data-trim data-noescape>
 						S foo() { S s; return s; }
