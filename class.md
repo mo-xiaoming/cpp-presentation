@@ -230,7 +230,7 @@ struct S { std::string s; }; // with SSO, the performance is no better than copy
 
 ## High order functions
 
-![nvi](https://godbolt.org/z/XY8b8z)
+![nvi](https://godbolt.org/z/1e613x)
 
 ![init version](https://godbolt.org/z/MZH3sS)
 ![done version](https://godbolt.org/z/6veSNr)
