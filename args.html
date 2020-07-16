@@ -32,14 +32,14 @@
 			<div class="slides">
 				<section data-markdown>
 					<textarea data-template>
-						## C++ Functions - arguments
+						# C++ Functions - arguments
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
-						## Why do we need functions?
+						### Why do we need functions?
 
-						- It is the essential building blocks of every program
+						It is the essential building blocks of every program
 
 						```cpp
 						class C {
@@ -58,7 +58,7 @@
 						void foo(C* c, int i);
 						```
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
 						```cpp
@@ -88,10 +88,10 @@
 						};
 						```
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
-					<textarea data-template>
-						## How long a function should be?
+					<script type="text/template">
+						### How long a function should be?
 
 						- It depends <!-- .element: class="fragment" data-fragment-index="1" -->
 						- Single Responsibility Principle (SRP) <!-- .element: class="fragment" data-fragment-index="2" -->
@@ -111,50 +111,46 @@
 							code;
 						}
 						```
-					</textarea>
-				<section>
+					</script>
+				</section>
 				<section data-markdown>
-					<textarea data-template>
-						## How to pass argument(s)
+					<script type="text/template">
+						### How to pass argument(s)
 
-						- `foo(T)` for small(~20ish bytes?) objects what won't ![p1](https://godbolt.org/z/RD4VoS)
+						- `foo(T)` for small(~20ish bytes?) objects, [your first option](https://godbolt.org/z/RD4VoS)
 						- `foo(T&)` and `foo(T const&)` for larger objects, or uncopyable
-						- `foo(T*)` and `foo(T const*)` for ==optional== larger objects, std::optional<T>?
+						- `foo(T*)` and `foo(T const*)` for **optional** larger objects
 						- `foo(T&&)` for optimization
 
-						That's it!
-					</textarea>
-				<section>
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
+					</script>
+				</section>
 				<section data-markdown>
-					<textarea data-template>
-						## How about smart pointers
+					<script type="text/template">
+						### How about smart pointers
 
-						Prefer value/pointer/reference
+						Prefer value/pointer/reference (const) <!-- .element: class="fragment" data-fragment-index="1" -->
 
 						```cpp
 						void by_value(T);
 
 						void by_ptr(T*);
-						void by_cptr(T const*);
 
 						void by_ref(T&)
-						void by_cref(T const&)
 
 						auto p = smart_ptr_type<T>();
 
-						by_value(T);
+						by_value(*p);
 
 						by_ptr(p.get());
-						by_cptr(p.get());
 
 						by_ref(*p);
-						by_cref(*p);
 						```
-					</textarea>
-				<section>
+					</script>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
-						## Only use smart pointers you may need to manipulate ownerships
+						### Only use smart pointers you may need to manipulate ownerships
 
 						```cpp
 						void foo(std::unique_ptr<T>);
@@ -171,7 +167,10 @@
 
 						foo(std::move(p));
 						```
-
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
 						```cpp
 						void foo(std::unique_ptr<T> &);
 
@@ -187,11 +186,13 @@
 
 						foo(p);
 						```
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
-						## Herb Sutter's favorite 10-liner
+						### Herb Sutter's favorite 10-liner
 
 						`std::weak_ptr<T>` means temporary shared ownership
 
@@ -207,7 +208,7 @@
 						}
 						```
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
 						| #           |                                             |
@@ -220,22 +221,124 @@
 						| temporay    | `std::weak_ptr<T>`                          |
 						| keep alive  | `std::shared_ptr<T>`                        |
 						| performance | `T&&`                                       |
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
-						## High order functions
+						### High order functions
 
-						![nvi](https://godbolt.org/z/1e613x)
+						[better than NVI](https://godbolt.org/z/1e613x)
 
-						![init version](https://godbolt.org/z/MZH3sS)
-						![done version](https://godbolt.org/z/6veSNr)
+						[naive version](https://godbolt.org/z/MZH3sS)
+
+						vs
+
+						[better? version](https://godbolt.org/z/6veSNr)
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
+						## Let's dig deeper
 					</textarea>
+				</section>
 				<section>
+					<pre><code class="cpp" data-trim data-noescape>
+					// .hpp
+					void foo(T);
+
+					// .cpp
+					void foo(T const);
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim data-noescape>
+					void bar(S);
+
+					S foo();
+					bar(foo()); // copy elision, zero cost
+
+					S s;
+					bar(s);     // copy, can be expensive
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim data-noescape>
+					void foo(S*);
+					void foo(std::optional&lt;S&gt;); // by value and optional, kinda immutable
+
+					auto p = std::optional&lt;S*&gt;(nullptr);
+					if(! p)	         // flase, p has a value
+					if(p == nullptr) // true, the value is nullptr
+					</code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Move semantics may not provide a performance boost
+
+						```cpp
+						struct S { int a[1000]; }; // no owned resources
+
+						struct S { std::string s; }; // with SSO, the performance is no better than copy
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						`std::smart_ptr<T>&` can be dangerous
+
+						```cpp
+						auto gp = std::make_shared<T>();
+
+						void foo(T*);
+
+						void bar(std::shared_ptr<T>& p) {
+							// some code
+
+							foo(p.get());
+						}
+
+						bar(gp);
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						>R.37: Do not pass a pointer or reference obtained from an aliased smart pointer
+
+						```cpp
+						void bar1(std::shared_ptr<T> p) {
+							foo(p.get());
+						}
+
+						void bar2(std::shared_ptr<T>& p) {
+							auto c = p;
+							foo(c.get());
+						}
+
+						// more cumbersome to std::unique_ptr
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Type Aliasing
+
+						[example](https://godbolt.org/z/16Tcv6)
+
+						That's why most xxx_cast you see is undefined behavior <!-- .element: class="fragment" data-fragment-index="1" -->
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Summary
+
+						- pass by value when you can
+						- pass by ref when you must
+						- use raw pointer for optional
+						- unique_ptr/shared_ptr for lifetime
+						- const everything
+					</textarea>
+				</section>
 			</div>
 		</div>
 
@@ -243,7 +346,8 @@
 
 		<script>
 			Reveal.initialize({
-				width: 1440,
+				height: 800,
+				width: 1280,
 				slideNumber: true,
 				loop: true,
 				hash: true,
@@ -262,82 +366,4 @@
 		</script>
 	</body>
 </html>
-## dig deeper
-
-```cpp
-// .hpp
-void foo(T);
-
-// .cpp
-void foo(T const);
-```
-
-```cpp
-void bar(S);
-
-S foo();
-bar(foo()); // copy elision, zero cost
-
-S s;
-bar(s);     // copy, can be expensive
-```
-
-```cpp
-void foo(S*);
-void foo(std::optional<S>); // by value and optional, kinda immutable
-
-auto p = std::optional<S*>(nullptr);
-if(! p)	         // flase, p has a value
-if(p == nullptr) // true, the value is nullptr
-```
-
-
-`std::smart_ptr<T>&` can be dangerous
-
->R.37: Do not pass a pointer or reference obtained from an aliased smart pointer
-
-```cpp
-auto gp = std::make_shared<T>();
-
-void foo(T*);
-
-void bar(std::shared_ptr<T>& p) {
-	// some code
-
-	foo(p.get());
-}
-
-bar(gp);
-```
-
-```cpp
-void bar1(std::shared_ptr<T> p) {
-	foo(p.get());
-}
-
-void bar2(std::shared_ptr<T>& p) {
-	auto c = p;
-	foo(c.get());
-}
-
-// more cumbersome to std::unique_ptr
-```
-
-## Aliasing
-
-![code](https://godbolt.org/z/16Tcv6)
-
-That's why most xxx_cast you see is undefined behavior
-
-- pass by value when you can, pass by const ref when you must</li>
-- use raw pointer for optional, unique_ptr/shared_ptr for lifetime</li>
-- don't share with \* or &, express via shared_ptr</li>
-
-						## Move semantics solves these and *may* provide a performance boost
-
-						```cpp
-						struct S { int a[1000]; }; // no owned resources
-
-						struct S { std::string s; }; // with SSO, the performance is no better than copy
-						```
 
