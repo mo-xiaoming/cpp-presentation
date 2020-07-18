@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 
 template <typename T> struct InstanceCounter {
   InstanceCounter() { ++counter_.numDefaultConstructor; }
@@ -17,6 +18,8 @@ template <typename T> struct InstanceCounter {
     return *this;
   }
   ~InstanceCounter() { ++counter_.numDestructor; }
+
+  static void counterReset() { std::memset(&counter_, 0, sizeof(counter_)); }
 
 private:
   static inline struct Counter {
@@ -38,8 +41,10 @@ private:
         std::printf("move  %d\n", numMoveConstructor);
       if (numMoveAssignment)
         std::printf("move= %d\n", numMoveAssignment);
+#if 0
       if (numDestructor)
         std::printf("dtor  %d\n", numDestructor);
+#endif
     }
 
   } counter_;
@@ -48,4 +53,5 @@ private:
 
 template <typename T> struct Counted : T, private InstanceCounter<T> {
   using T::T;
+  using InstanceCounter<T>::counterReset;
 };
