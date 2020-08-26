@@ -1,0 +1,488 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>C++ Function 1/2</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/atom-one-light.css">
+
+		<style type="text/css">
+			.left { text-align: left; }
+			.right { text-align: right; }
+		</style>
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-markdown>
+					<textarea data-template>
+						# C++ Function 1/2
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						### Why do we need functions?
+
+						It is the essential building blocks of every program
+
+						```cpp
+						class C {
+						public:
+							void foo(int i);
+						private:
+							std::string s;
+						};
+						```
+
+						```c
+						struct C {
+							std::string s;
+						};
+
+						void foo(C* c, int i);
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						```cpp
+						class B {
+						public:
+							virtual void foo(int i);
+							virtual void bar(int i);
+						};
+
+						class D : public B {
+						public:
+							void foo(int i) override;
+						};
+						```
+
+						```c
+						void B__foo(B* b, int i);
+						void B__bar(B* b, int i);
+						void D__foo(D* d, int i);
+
+						struct B {
+							__vtable[2] { B__foo, B__bar };
+						};
+
+						struct D {
+							__vtable[2] { D__foo, B__bar };
+						};
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						### How long a function should be?
+
+						- It depends <!-- .element: class="fragment" data-fragment-index="1" -->
+						- Single Responsibility Principle (SRP) <!-- .element: class="fragment" data-fragment-index="2" -->
+
+						```cpp
+						// foo does this and that
+						void foo();
+
+						void bar() {
+							// comment
+							code;
+
+							// comment
+							code;
+
+							// comment
+							code;
+						}
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						### How to pass argument(s)
+
+						- `foo(T)` for small(~20ish bytes?) objects, [your first option](https://godbolt.org/z/RD4VoS)
+						- `foo(T&)` and `foo(T const&)` for larger objects, or uncopyable
+						- `foo(T*)` and `foo(T const*)` for **optional** larger objects
+						- `foo(T&&)` for optimization
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
+					</script>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						### How about smart pointers
+
+						Prefer value/pointer/reference (const) <!-- .element: class="fragment" data-fragment-index="1" -->
+
+						```cpp
+						void by_value(T);
+
+						void by_ptr(T*);
+
+						void by_ref(T&)
+
+						auto p = smart_ptr_type<T>();
+
+						by_value(*p);
+
+						by_ptr(p.get());
+
+						by_ref(*p);
+						```
+					</script>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						### Only use smart pointers you may need to manipulate ownerships
+
+						```cpp
+						void foo(std::unique_ptr<T>);
+
+						auto p = std::make_unique<T>();
+
+						foo(std::move(p));
+						```
+
+						```cpp
+						void foo(std::unique_ptr<T>&&);
+
+						auto p = std::make_unique<T>();
+
+						foo(std::move(p));
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						```cpp
+						void foo(std::unique_ptr<T> &);
+
+						auto p = std::make_unique<T>();
+
+						foo(p);
+						```
+
+						```cpp
+						void foo(std::shared_ptr<T> &);
+
+						auto p = std::make_shared<T>();
+
+						foo(p);
+						```
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						### Herb Sutter's favorite 10-liner
+
+						`std::weak_ptr<T>` means temporary shared ownership
+
+						```cpp
+						std::shared_ptr<widget> get_widget(int id) {
+							static std::map<int, std::weak_ptr<widget>> cache;
+							static std::mutex m;
+
+							std::lock_guard<std::mutex> hold(m);
+							auto sp = cache[id].lock();
+							if (!sp) cache[id] = sp = load_widget(id);
+							return sp;
+						}
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						| #           |                                             |
+						|-------------|---------------------------------------------|
+						| snapshot    | `T`                                         |
+						| modify      | `T*`, `T&`                                  |
+						| observe     | `T const*`, `T const&`                      |
+						| sink        | `std::unique_ptr<T>` `std::unique_ptr<T>&&` |
+						| may reseat  | `std::unique_ptr<T>&` `std::shared_ptr<T>&` |
+						| temporay    | `std::weak_ptr<T>`                          |
+						| keep alive  | `std::shared_ptr<T>`                        |
+						| performance | `T&&`                                       |
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						### High order functions
+
+						[better than NVI](https://godbolt.org/z/1e613x)
+
+						[naive version](https://godbolt.org/z/MZH3sS)
+
+						vs
+
+						[better? version](https://godbolt.org/z/6veSNr)
+
+						**That's it!** <!-- .element: class="fragment" data-fragment-index="1" -->
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Let's dig deeper
+					</textarea>
+				</section>
+				<section>
+					<pre><code class="cpp" data-trim data-noescape>
+					// .hpp
+					void foo(T);
+
+					// .cpp
+					void foo(T const);
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim data-noescape>
+					void bar(S);
+
+					S foo();
+					bar(foo()); // copy elision, zero cost
+
+					S s;
+					bar(s);     // copy, can be expensive
+					</code></pre>
+					<pre class="fragment"><code class="cpp" data-trim data-noescape>
+					void foo(S*);
+					void foo(std::optional&lt;S&gt;); // by value and optional, kinda immutable
+
+					auto p = std::optional&lt;S*&gt;(nullptr);
+					if(! p)	         // flase, p has a value
+					if(p == nullptr) // true, the value is nullptr
+					</code></pre>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Move semantics may not provide a performance boost
+
+						```cpp
+						struct S { int a[1000]; }; // no owned resources
+
+						struct S { std::string s; }; // with SSO, the performance is no better than copy
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						`std::smart_ptr<T>&` can be dangerous
+
+						```cpp
+						auto gp = std::make_shared<T>();
+
+						void foo(T*);
+
+						void bar(std::shared_ptr<T>& p) {
+							// some code
+
+							foo(p.get());
+						}
+
+						bar(gp);
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						>R.37: Do not pass a pointer or reference obtained from an aliased smart pointer
+
+						```cpp
+						void bar1(std::shared_ptr<T> p) {
+							foo(p.get());
+						}
+
+						void bar2(std::shared_ptr<T>& p) {
+							auto c = p;
+							foo(c.get());
+						}
+
+						// more cumbersome to std::unique_ptr
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Type Aliasing
+
+						[example](https://godbolt.org/z/16Tcv6)
+
+						That's why most xxx_cast you see is undefined behavior <!-- .element: class="fragment" data-fragment-index="1" -->
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Summary
+
+						- pass by value when you can
+						- pass by ref when you must
+						- use raw pointer for optional
+						- unique_ptr/shared_ptr for lifetime
+						- const everything if possible
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Let's dig deeper
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Value categories
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						```cpp
+						int i;
+						i = 42; // OK
+						42 = i; // ERROR
+						```
+
+						- `i` is an lvalue, on the **left** side of an assignment
+
+						- `42` is an rvalue, on the **right** side of an assignment
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						```cpp
+						int *p = &i;  // OK for lvalue
+						int *q = &42; // ERROR
+						```
+
+						- lvalue has an address, rvalue do not
+
+						- Conceptually, lvalue occupies memory storage, non-class rvalue doesn't, class rvalue do
+
+						```cpp
+						struct S { int x, y; }
+
+						S foo();
+
+						int n = foo().y; // foo must have an address to allow access to y
+						```
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						```cpp
+						int i = 0;
+						int j = 0;
+
+						int &r = i;
+						&r = j; // ERROR
+
+						int *p = i;
+						*p = j; // OK
+						```
+
+						- \* yields an lvalue
+
+						- & yields an rvalue
+
+						- internally, they are the same, & added to simplify operator overload for user defined types
+					</textarea>
+				<section>
+				<section data-markdown>
+					<textarea data-template>
+						`const` is a good idea, but complicates rules
+
+						```cpp
+						const int c = 0;
+						c = 42;             // ERROR
+						const int *r = &c;  // OK
+						```
+
+						- `c` has an address, but cannot be on the left side
+
+						- lvalue != **l**eft value
+
+						- lvalue == **l**ocator value
+
+						- rvalue == non-lvalue
+					</textarea>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						rvalue reference is a good idea, but complicates rules
+
+						```cpp
+						std::string s;
+						std::move(s) = "hello";     // OK
+						auto sp = &std::move(s);    // ERROR
+						```
+
+						- `std::move` == `std::rvalue_cast`
+
+						- `std::move`, a bit like lvalue, a lot like rvalue, named xvalue (e**x**pired value)
+
+						- Original rvalue was renamed to prvalue (**p**ure rvalue)
+					</textarea>
+				</section>
+				<section>
+					<img src="./img/value_categories.png"/>
+					<ul>
+						<li>lvalue: everything that has a name and string literals</li>
+						<li>prvalue: temporaries and other literals</li>
+						<li>xvalue: returned rvalue reference or via temporary materialization from prvalue</li>
+					</ul>
+				</section>
+				<section>
+					<img class="stretch" src="./img/value_cate.png"/>
+				</section>
+				<section data-markdown>
+					<textarea data-template>
+						## Let's dig deeper
+
+						- [a simple example](https://godbolt.org/z/MhsnYe)
+
+						- [final? version](https://godbolt.org/z/fPdb95)
+					</textarea>
+				</section>
+			</div>
+		</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			Reveal.initialize({
+				height: 800,
+				width: 1280,
+				slideNumber: true,
+				loop: true,
+				hash: true,
+				fragmentInURL: true,
+				transition: 'none',
+				backgroundTransition: 'none',
+				autoPlayMedia: true,
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
+
