@@ -66,6 +66,7 @@
 						public:
 							virtual void foo(int i);
 							virtual void bar(int i);
+							virtual ~B() = default;
 						};
 
 						class D : public B {
@@ -93,8 +94,8 @@
 					<script type="text/template">
 						### How long a function should be?
 
-						- It depends <!-- .element: class="fragment" data-fragment-index="1" -->
-						- Single Responsibility Principle (SRP) <!-- .element: class="fragment" data-fragment-index="2" -->
+						- It depends
+						- Single Responsibility Principle (SRP)
 
 						```cpp
 						// foo does this and that
@@ -129,7 +130,7 @@
 					<script type="text/template">
 						### How about smart pointers
 
-						Prefer value/pointer/reference (const) <!-- .element: class="fragment" data-fragment-index="1" -->
+						Prefer value/pointer/reference
 
 						```cpp
 						void by_value(T);
@@ -229,7 +230,11 @@
 					<textarea data-template>
 						### High order functions
 
-						[better than NVI](https://godbolt.org/z/1e613x)
+						[NVI](https://godbolt.org/z/5rYo8K)
+
+						vs
+
+						[better than NVI](https://godbolt.org/z/WrMv7E)
 
 						[naive version](https://godbolt.org/z/MZH3sS)
 
@@ -289,12 +294,13 @@
 						```cpp
 						auto gp = std::make_shared<T>();
 
-						void foo(T*);
+						void foo() { gp = other_ptr; }
+
+						void baz(T);
 
 						void bar(std::shared_ptr<T>& p) {
-							// some code
-
-							foo(p.get());
+							foo();
+							baz(*p));
 						}
 
 						bar(gp);
@@ -323,7 +329,7 @@
 					<textarea data-template>
 						## Type Aliasing
 
-						[example](https://godbolt.org/z/16Tcv6)
+						[example](https://godbolt.org/z/51fcPT)
 
 						That's why most xxx_cast you see is undefined behavior <!-- .element: class="fragment" data-fragment-index="1" -->
 					</textarea>
@@ -374,7 +380,7 @@
 						- Conceptually, lvalue occupies memory storage, non-class rvalue doesn't, class rvalue do
 
 						```cpp
-						struct S { int x, y; }
+						struct S { int x=0, y=0; }
 
 						S foo();
 
@@ -401,7 +407,7 @@
 
 						- internally, they are the same, & added to simplify operator overload for user defined types
 					</textarea>
-				<section>
+				</section>
 				<section data-markdown>
 					<textarea data-template>
 						`const` is a good idea, but complicates rules
@@ -455,7 +461,7 @@
 
 						- [a simple example](https://godbolt.org/z/MhsnYe)
 
-						- [final? version](https://godbolt.org/z/fPdb95)
+						- [final? version](https://godbolt.org/z/vf8fPT)
 					</textarea>
 				</section>
 			</div>
