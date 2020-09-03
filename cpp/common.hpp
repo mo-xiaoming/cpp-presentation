@@ -2,27 +2,27 @@
 #include <cstring>
 
 template <typename T> struct InstanceCounter {
-  InstanceCounter() { ++counter_.numDefaultConstructor; }
-  InstanceCounter(InstanceCounter const &) noexcept {
+  constexpr InstanceCounter() { ++counter_.numDefaultConstructor; }
+  constexpr InstanceCounter(InstanceCounter const &) noexcept {
     ++counter_.numCopyConstructor;
   }
-  InstanceCounter &operator=(InstanceCounter const &) &noexcept {
+  constexpr InstanceCounter &operator=(InstanceCounter const &) &noexcept {
     ++counter_.numCopyAssignment;
     return *this;
   }
-  InstanceCounter(InstanceCounter &&) noexcept {
+  constexpr InstanceCounter(InstanceCounter &&) noexcept {
     ++counter_.numMoveConstructor;
   }
-  InstanceCounter &operator=(InstanceCounter &&) &noexcept {
+  constexpr InstanceCounter &operator=(InstanceCounter &&) &noexcept {
     ++counter_.numMoveAssignment;
     return *this;
   }
-  ~InstanceCounter() { ++counter_.numDestructor; }
+  constexpr ~InstanceCounter() { ++counter_.numDestructor; }
 
-  static void counterReset() { std::memset(&counter_, 0, sizeof(counter_)); }
+  static constexpr void counterReset() { std::memset(&counter_, 0, sizeof(counter_)); }
 
 private:
-  static inline struct Counter {
+  static inline constexpr struct Counter {
     unsigned char numDefaultConstructor : 4 = 0;
     unsigned char numCopyConstructor : 4 = 0;
     unsigned char numCopyAssignment : 4 = 0;
