@@ -22,14 +22,14 @@ template <typename T> struct InstanceCounter {
   static constexpr void counterReset() { std::memset(&counter_, 0, sizeof(counter_)); }
 
 private:
-  static inline constexpr struct Counter {
+  static inline struct Counter {
     unsigned char numDefaultConstructor : 4 = 0;
     unsigned char numCopyConstructor : 4 = 0;
     unsigned char numCopyAssignment : 4 = 0;
     unsigned char numMoveConstructor : 4 = 0;
     unsigned char numMoveAssignment : 4 = 0;
     unsigned char numDestructor : 4 = 0;
-    Counter &operator=(Counter &&) = delete;
+    constexpr Counter &operator=(Counter &&) = delete;
     ~Counter() {
       if (numDefaultConstructor)
         std::printf("ctor  %d\n", numDefaultConstructor);
