@@ -7,7 +7,7 @@
 
 namespace {
 	void ipw_to_upper(std::string& s) {
-		std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) -> unsigned char { return std::toupper(c); });
+		std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
 	}
 
 	int ipw_icmp(std::string a, std::string b) {
