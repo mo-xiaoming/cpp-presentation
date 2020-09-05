@@ -1,0 +1,4 @@
+vcpkg_installed/
+.clangd/
+build/
+compile_commands.json

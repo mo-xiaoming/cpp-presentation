@@ -1,0 +1,12 @@
+{
+	"name": "icomp-benchmark",
+	"version-string": "0.0.1",
+	"dependencies": [
+		"boost",
+		"fmt",
+		"benchmark",
+		"gtest",
+		"spdlog"
+	]
+}
+
