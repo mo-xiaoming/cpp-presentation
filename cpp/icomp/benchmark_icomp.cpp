@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <string>
 #include <string_view>
 
@@ -18,50 +19,28 @@ auto ipw_icmp(std::string a, std::string b) -> int {
     return a.compare(b);
 }
 
-auto const A = std::string("hello");
-auto const B = std::string("world");
-auto const C = std::string("hell");
-auto const D = std::string("hellx");
+std::array<std::string, 4> const strings1 = {"hello", "world", "hell", "hellx"};
+std::array<std::string, 4> const strings2 = {"hellx", "hell", "world", "hello"};
 } // namespace
 
-static void SameLengthIpw(benchmark::State& state) {
+static void Ipworks(benchmark::State& state) {
     for (auto _ : state) {
-        benchmark::DoNotOptimize(ipw_icmp(A, B));
+        for (auto const& i : strings1) {
+            for (auto const& j : strings2) {
+                benchmark::DoNotOptimize(ipw_icmp(i, j));
+            }
+        }
     }
 }
-BENCHMARK(SameLengthIpw);
+BENCHMARK(Ipworks);
 
-static void SameLengthMine2(benchmark::State& state) {
+static void Mine(benchmark::State& state) {
     for (auto _ : state) {
-        benchmark::DoNotOptimize(icmp2(A, B));
+        for (auto const& i : strings1) {
+            for (auto const& j : strings2) {
+                benchmark::DoNotOptimize(icmp2(i, j));
+            }
+        }
     }
 }
-BENCHMARK(SameLengthMine2);
-
-static void DiffLengthIpw(benchmark::State& state) {
-    for (auto _ : state) {
-        benchmark::DoNotOptimize(ipw_icmp(B, C));
-    }
-}
-BENCHMARK(DiffLengthIpw);
-
-static void DiffLengthMine2(benchmark::State& state) {
-    for (auto _ : state) {
-        benchmark::DoNotOptimize(icmp2(B, C));
-    }
-}
-BENCHMARK(DiffLengthMine2);
-
-static void LastLetterIpw(benchmark::State& state) {
-    for (auto _ : state) {
-        benchmark::DoNotOptimize(ipw_icmp(A, D));
-    }
-}
-BENCHMARK(LastLetterIpw);
-
-static void LastLetterMine2(benchmark::State& state) {
-    for (auto _ : state) {
-        benchmark::DoNotOptimize(icmp2(A, D));
-    }
-}
-BENCHMARK(LastLetterMine2);
+BENCHMARK(Mine);
