@@ -4,7 +4,8 @@
 #include "logger.hpp"
 
 struct Mock_logger {
-    static void info(std::string_view /*unused*/) {}
+    template <typename T>
+    static void info(T&& /*unused*/) {}
     static void set_level(logging::Level /*unused*/) {}
 };
 
@@ -17,15 +18,9 @@ TEST_CASE("test foo") {
 }
 
 struct Mock_output_stream : logging::Output_stream {
-    void output(std::string_view msg) override {
-        ++called_;
-        msg_ = msg;
-    }
+    void output(std::string_view msg) override;
 
-    void reset() {
-        called_ = 0;
-        msg_.clear();
-    }
+    void reset();
 
     [[nodiscard]] int called() const { return called_; }
 
@@ -35,6 +30,16 @@ private:
     int called_ = 0;
     std::string msg_;
 };
+
+void Mock_output_stream::output(std::string_view msg) {
+    ++called_;
+    msg_ = msg;
+}
+
+void Mock_output_stream::reset()  {
+    called_ = 0;
+    msg_.clear();
+}
 
 SCENARIO("logger set and get level") {
     constexpr std::string_view msg = "hello";

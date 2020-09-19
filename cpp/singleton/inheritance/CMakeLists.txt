@@ -36,6 +36,6 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 include(Catch)
 
-add_executable(tests test_main.cpp logger.cpp test_foo.cpp)
+add_executable(tests test_main.cpp logger.cpp tests.cpp)
 target_link_libraries(tests PRIVATE Catch2::Catch2 fmt::fmt spdlog::spdlog)
 catch_discover_tests(tests)

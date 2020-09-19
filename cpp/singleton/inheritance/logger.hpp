@@ -23,6 +23,11 @@ struct Logger {
     static void set_level(Level level);
 
     static void info(std::string_view msg);
+
+    template <typename Func>
+    requires std::is_invocable_v<Func> static void info(Func&& func) {
+        info(std::forward<Func>(func)());
+    }
 };
 
 } // namespace logging

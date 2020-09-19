@@ -5,7 +5,7 @@
 template <typename LoggerType = logging::Logger> auto foo(int n) -> int {
     constexpr auto dummy1 = 10;
     if (n > dummy1) {
-        LoggerType::info("> 10");
+        LoggerType::info([] { return "> 10"; });
         return 1;
     }
     constexpr auto dummy = 10;
