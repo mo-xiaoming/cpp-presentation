@@ -8,8 +8,6 @@ struct Mock_logger {
     static void set_level(logging::Level /*unused*/) {}
 };
 
-template int foo<Mock_logger>(int);
-
 TEST_CASE("test foo") {
     foo(0);
     auto const f = [](int n) { return foo<Mock_logger>(n); };
