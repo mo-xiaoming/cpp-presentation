@@ -11,7 +11,7 @@ struct Default_output_stream : logging::Output_stream {
 
 struct DefaultLogger {
     void set_out_stream(std::shared_ptr<logging::Output_stream> out) {
-        out_ = out;
+        out_ = std::move(out);
     }
 
     void set_level(logging::Level level) { level_ = level; }
@@ -38,7 +38,7 @@ namespace logging {
 Output_stream::~Output_stream() = default;
 
 void Logger::set_out_stream(std::shared_ptr<Output_stream> out) {
-    instance().set_out_stream(out);
+    instance().set_out_stream(std::move(out));
 }
 void Logger::set_level(Level level) { instance().set_level(level); }
 

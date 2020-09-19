@@ -13,3 +13,4 @@ node_modules/
 css/reveal.min.css
 js/reveal.min.js
 a.out
+cmake-build-*/

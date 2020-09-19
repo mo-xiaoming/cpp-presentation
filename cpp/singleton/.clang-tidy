@@ -1,4 +1,3 @@
 ---
-Checks:          '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm-*'
+Checks:          '*,-darwin-*,-android-*,-fuchsia-*,-objc-*,-zircon-*,-abseil-*,-llvm-*,-llvmlibc-*,-linuxkernel-*,-modernize-use-trailing-return-type'
 HeaderFilterRegex: '.*'
-
