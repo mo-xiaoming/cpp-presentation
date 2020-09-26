@@ -15,7 +15,7 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 #set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fno-rtti -Wfatal-errors")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fno-rtti -Wfatal-errors")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(cxx_strict_flags "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded")
@@ -30,12 +30,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_strict_flags}")
 include(CTest)
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
-find_package(fmt CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
-
 find_package(Catch2 CONFIG REQUIRED)
 include(Catch)
 
 add_executable(tests test_main.cpp logger.cpp tests.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2 fmt::fmt spdlog::spdlog)
+target_link_libraries(tests PRIVATE Catch2::Catch2)
 catch_discover_tests(tests)
