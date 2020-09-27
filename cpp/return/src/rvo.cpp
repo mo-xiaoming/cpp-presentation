@@ -13,24 +13,40 @@
 // (ignoring cv-qualification) as the function return type. This variant of
 // copy elision is known as NRVO, "named return value optimization".
 
+#include <string>
 #include <utility>
 
-namespace good {
-struct X {};
+namespace {
+struct X {
+    std::string s;
+};
 
-X foo0() {
-    auto const x = X();
-    return x;
+X foo0(X&& x) { return std::move(x); }
+
+X foo1(X& x) { return std::move(x); }
+
+X foo3(bool flag, X x, X y) { // NOLINT
+    return flag ? std::move(x) : std::move(y);
 }
 
-X foo1(X x) { return x; }
-
-X foo2(X x, X y) { return true ? std::move(x) : std::move(y); }
-
-X foo3(X x, X y) {
-    if (true) {
+X foo4(bool flag, X x, X y) {
+    if (flag) {
         return x;
     }
     return y;
 }
-} // namespace good
+
+X foo2() {
+    auto const x = X();
+    return x; // NOLINT // const stops it from being moved, it's a copy
+}
+} // namespace
+
+int main() {
+    foo0(X{});
+    auto x = X();
+    foo1(x);
+    foo2();
+    foo3(true, X(), X());
+    foo4(false, X(), X());
+}
