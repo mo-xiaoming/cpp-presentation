@@ -1,6 +1,7 @@
 [requires]
 spdlog/1.8.0
 catch2/2.13.1
+tl-expected/20190710
 
 [generators]
 cmake_find_package
