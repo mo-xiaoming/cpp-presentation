@@ -1,3 +1,5 @@
+// Not a pure function, disables lots of optimizations
+
 #include <fcntl.h>
 #include <unistd.h>
 

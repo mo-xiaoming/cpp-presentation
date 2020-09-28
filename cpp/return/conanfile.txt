@@ -2,6 +2,7 @@
 spdlog/1.8.0
 catch2/2.13.1
 tl-expected/20190710
+boost/1.73.0
 
 [generators]
 cmake_find_package

@@ -9,8 +9,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(cxx_compiler_is_clang TRUE)
 elseif (CMAKE_COMPILER_IS_GNUCXX)
@@ -19,7 +17,8 @@ else ()
     message(FATAL_ERROR "unsupported compiler ${CMAKE_CXX_COMPILER_ID}")
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -Wfatal-errors")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-optimize-sibling-calls -fno-omit-frame-pointer")
 
 macro(add_sanitizer name flags)
@@ -53,6 +52,17 @@ else ()
 endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${cxx_strict_flags}")
+
+if (NOT CMAKE_BUILD_TYPE)
+    message(STATUS "build type is not given, set to Release")
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+if (NOT (CMAKE_BUILD_TYPE STREQUAL Release OR CMAKE_BUILD_TYPE STREQUAL Debug))
+    message(FATAL_ERROR "unsupported build type ${CMAKE_BUILD_TOOL}")
+endif ()
+if (CMAKE_BUILD_TYPE STREQUAL Release)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif ()
 
 mark_as_advanced(cxx_strict_flags cxx_compiler_is_gcc cxx_compiler_is_clang)
 
